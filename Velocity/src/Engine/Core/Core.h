@@ -1,9 +1,15 @@
 #pragma once
 #include <memory>
+
 // Assertions
+#define ASSERT(x, ...)
+#define VERIFY(x, ...)
 
 // Typedefs
 
+// Helpers
+#define BIND_FN(x) std::bind(x, this, std::placeholders::_1)
+#define BIT(n) (1 << n)
 namespace Vct
 {
     template<typename T>

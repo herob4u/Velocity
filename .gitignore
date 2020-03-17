@@ -1,3 +1,10 @@
 build/
-VelocityProj
-VelocityApp
+Velocity.exe
+Velocity.pdb
+Velocity.ilk
+Velocity.sln
+Velocity/Velocity.vcxproj
+Velocity/Velocity.vcxproj.filters
+Velocity/Velocity.vcxproj.user
+
+.vs/
