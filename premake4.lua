@@ -85,10 +85,17 @@ workspace "Velocity"
 		pchheader "vctPCH.h"
       	pchsource "Velocity/src/vctPCH.cpp"
 
+		-- Assets Directory
+		currentDir = os.getcwd()
+		assetDir = currentDir.."/Assets/"
+		os.mkdir(assetDir)
+		defines {"ASSET_DIR=".."\""..assetDir.."\""}
+
 		files
 		{
 			"%{prj.name}/src/**.h",
 			"%{prj.name}/src/**.cpp",
+			"%{prj.name}/src/**.inl",
 			"%{prj.name}/vendor/glm/glm/**.hpp",
 			"%{prj.name}/vendor/glm/glm/**.inl"
 		}

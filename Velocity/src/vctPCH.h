@@ -11,4 +11,9 @@
 #include <unordered_map>
 #include <unordered_set>
 
+#include <stdint.h>
+
 #include <Windows.h>
+
+#include "Engine/Core/Core.h"
+#include "Engine/Core/Log.h"

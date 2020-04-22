@@ -2,8 +2,23 @@
 #include <memory>
 
 // Assertions
-#define ASSERT(x, ...)
-#define VERIFY(x, ...)
+#ifdef VCT_DEBUG
+    #ifdef VCT_PLATFORM_WINDOWS
+        #define ASSERT(x, ...)  if((!x)){VCT_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak();}
+    #elif VCT_PLATFORM_LINUX
+        #define ASSERT(x, ...)  if((!x)){VCT_ERROR("Assertion Failed: {0}", __VA_ARGS__); raise(SIGABRT);}
+    #endif
+
+#endif // VCT_DEBUG
+
+// Compilter specifics
+#if defined _MSC_VER  && _MSC_VER >= 1900
+    #define FORCEINLINE __forceinline
+#elif defined __GNUG__
+    #define FORCEINLINE __attribute__((always_inline))
+#else
+    #define FORCEINLINE
+#endif // VCT_PLATFORM_WINDOWS
 
 // Typedefs
 

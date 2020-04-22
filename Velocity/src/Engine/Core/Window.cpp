@@ -59,7 +59,7 @@ void Window::Init()
     if(!s_GLContextInitialized)
     {
         bool success = (glfwInit() == GLFW_TRUE);
-        ASSERT(success);
+        ASSERT(success, "GLFW Init Failed");
 
         s_GLContextInitialized = true;
         glfwSetErrorCallback(GLFWErrorHandler);
