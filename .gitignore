@@ -7,4 +7,6 @@ Velocity/Velocity.vcxproj
 Velocity/Velocity.vcxproj.filters
 Velocity/Velocity.vcxproj.user
 
+Velocity/vendor/
+
 .vs/
