@@ -13,6 +13,4 @@ int main(int argc, char** argv)
     Vct::Application app = Vct::Application();
     app.PushLayer(new Vct::ViewportLayer());
     app.Run();
-
-    
 }

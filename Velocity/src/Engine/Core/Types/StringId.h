@@ -42,6 +42,7 @@ public:
     StringId(const StringId& Other = StringId::NONE);
 
     static StringId NONE;
+    static StringId Concat(const StringId& lhs, const StringId& rhs);
 
     FORCEINLINE uint16_t GetIndex() const { return Id; }
     FORCEINLINE uint16_t GetInstance() const { return Instance; }
@@ -56,7 +57,7 @@ protected:
     StringId(uint16_t id, uint16_t instance);
 
     /* Singleton access */
-    StringIdTable& GetStringIdTable() const;
+    static StringIdTable& GetStringIdTable();
 
     uint16_t Id;
     uint16_t Instance;

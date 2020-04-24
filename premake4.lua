@@ -24,6 +24,8 @@ workspace "Velocity"
 		"../lib"
 	}
 
+	-- Basic compiler build options
+	buildOptions = {"-std=c++11"}
 
 	if os.get() == "macosx" then
 		linkLibs = {
@@ -52,6 +54,11 @@ workspace "Velocity"
 			"dl",
 			"pthread"
 		}
+		
+		table.insert(buildOptions, "-fopenmp")
+		table.insert(buildOptions, "-DUSE_OPENMP")
+
+		linkOptionList = {"-fopenmp"}
 	end
 
 	if os.get() == "windows" then
@@ -61,14 +68,13 @@ workspace "Velocity"
 			"imGui",
 			"opengl32.lib"
 		}
+		table.insert(buildOptions, "/openmp")
 	end
 
 	-- Build Options:
 	if os.get() == "macosx" then
 		linkOptionList = { "-framework IOKit", "-framework Cocoa", "-framework CoreVideo", "-framework OpenGL" }
 	end
-
-	buildOptions = {"-std=c++11"}
 
 	project "Velocity"
 		location "Velocity"

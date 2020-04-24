@@ -22,6 +22,11 @@ public:
 
     Path(const char* path);
     Path(const char* folder, const char* file);
+    Path(const StringId& pathId);
+
+    bool operator==(const Path& Other) const;
+    Path operator+(const Path& Other) const;
+    Path& operator+=(const Path& Other);
 
     PathError GetExtension(std::string& outExtension) const;
     PathError GetDirectory(std::string& outDirectory) const;

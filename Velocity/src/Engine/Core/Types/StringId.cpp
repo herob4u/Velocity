@@ -137,13 +137,37 @@ StringId::StringId(const StringId& Other)
 {
 }
 
+StringId StringId::Concat(const StringId& lhs, const StringId& rhs)
+{
+    StringIdTable& table = GetStringIdTable();
+
+    const StringIdElement* lhs_element = table.Find(lhs.Id, lhs.Instance);
+    const StringIdElement* rhs_element = table.Find(rhs.Id, rhs.Instance);
+
+    if(!lhs_element && !rhs_element)
+        return StringId::NONE;
+    else if(!lhs_element)
+        return rhs;
+    else if(!rhs_element)
+        return lhs;
+
+    const size_t len_lhs = strlen(lhs_element->DisplayString);
+    const size_t len_rhs = strlen(rhs_element->DisplayString);
+
+    char concatStr[MAX_STRING_LEN] = {'\0'};
+    memcpy(concatStr, lhs_element->DisplayString, len_lhs);
+    memcpy(&concatStr[len_lhs], rhs_element->DisplayString, len_rhs);
+
+    return StringId(concatStr);
+}
+
 StringId::StringId(uint16_t id, uint16_t instance)
     : Id(id)
     , Instance(instance)
 {
 }
 
-StringIdTable& StringId::GetStringIdTable() const
+StringIdTable& StringId::GetStringIdTable()
 {
     return s_Table;
 }

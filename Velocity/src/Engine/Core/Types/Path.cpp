@@ -1,10 +1,13 @@
 #include "vctPCH.h"
 #include "Path.h"
 
+static const std::string INVALID_FILE_TOKENS = "\"' ,/.:|&!~\n\r\t@#(){}[]=;^%$`";
+static const std::string INVALID_DIRECTORY_TOKENS = "\"' ,|&!~\n\r\t@#(){}[]=;^%$`";
+
 PathError Path::GetExtension(const std::string& path, std::string& outExtension)
 {
     ASSERT(path.length(), "Expected non-empty path string");
-    for(int i = path.size() - 1; i >= 0; i--)
+    for(int i = (int)path.size() - 1; i >= 0; i--)
     {
         if(path[i] == '.')
         {
@@ -21,9 +24,9 @@ PathError Path::GetDirectory(const std::string& path, std::string& outDirectory)
     ASSERT(path.length(), "Expected non-empty path string");
     outDirectory.assign(path);
     
-    for(int i = path.length() - 1; i > 0; i--)
+    for(int i = (int)path.length() - 1; i > 0; i--)
     {
-        if(outDirectory[i] == '/')
+        if(outDirectory[i] == '/' || outDirectory[i] == '\\')
             return PathError::NONE;
         else
             outDirectory[i] = '\0';
@@ -38,11 +41,11 @@ PathError Path::GetBaseName(const std::string& path, std::string& outBaseName)
     // Begin marks the first character of the basename
     // End marks the last character of the basename
     int begin = 0;
-    int end = path.length() - 1;
+    int end = (int)path.length() - 1;
 
-    for(int i = 0, j = path.length() - 1; i <= j; i++, j--)
+    for(int i = 0, j = (int)path.length() - 1; i <= j; i++, j--)
     {
-        if(path[i] == '/')
+        if(path[i] == '/' || path[i] == '\\')
             begin = i + 1;
 
         if(path[j] == '.')
@@ -65,9 +68,9 @@ PathError Path::GetBaseNameExtension(const std::string& path, std::string& outBa
 {
     ASSERT(path.length(), "Expected non-empty path string");
     int begin = 0;
-    for(int i = path.length() - 1; i >= 0; i--)
+    for(int i = (int)path.length() - 1; i >= 0; i--)
     {
-        if(path[i] == '/')
+        if(path[i] == '/' || path[i] == '\\')
             begin = i+1;
     }
 
@@ -102,6 +105,31 @@ Path::Path(const char* folder, const char* file)
     m_PathId = StringId(fullpath);
 
     free(fullpath);
+}
+
+Path::Path(const StringId& pathId)
+    : m_PathId(pathId)
+{
+}
+
+bool Path::operator==(const Path& Other) const
+{
+    return m_PathId == Other.m_PathId;
+}
+
+Path Path::operator+(const Path& Other) const
+{
+    ASSERT(!IsFile(), "Invalid Path Concatenation");
+    StringId concatId = StringId::Concat(m_PathId, Other.m_PathId);
+    return Path(concatId);
+}
+
+Path& Path::operator+=(const Path& Other)
+{
+    ASSERT(!IsFile(), "Invalid Path Concatenation");
+    m_PathId = StringId::Concat(m_PathId, Other.m_PathId);
+    return *this;
+    // TODO: insert return statement here
 }
 
 PathError Path::GetExtension(std::string& outExtension) const
@@ -143,7 +171,7 @@ bool Path::IsFile() const
     if(path[path.length() - 1] == '/')
         return false;
 
-    for(int i = path.length() - 1; i >= 0; i--)
+    for(int i = (int)path.length() - 1; i >= 0; i--)
     {
         // Valid file if no strange string such as "Folder/.ext" or ".ext"
         if(path[i] == '.')
