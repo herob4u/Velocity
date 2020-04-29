@@ -34,6 +34,8 @@ protected:
     StringIdElement Table[MAX_STRING_IDS];
 };
 
+/* A hashed representation of a string that allows for rapid comparisons and duplication */
+// @TODO: If we want to book-keep the table, can give ids a ref count. When 0, remove from string table.
 class StringId
 {
 public:
@@ -52,6 +54,7 @@ public:
     FORCEINLINE int Compare(const StringId& Other) const;
 
     std::string ToString() const;
+    const char* ToStringRef() const; // Faster version that returns the reference instead of copying
     std::string DebugDump() const;
 protected:
     StringId(uint16_t id, uint16_t instance);

@@ -20,6 +20,7 @@ public:
     static PathError GetBaseName(const std::string& path, std::string& outBaseName);
     static PathError GetBaseNameExtension(const std::string& path, std::string& outBaseNameExtension);
 
+    Path();
     Path(const char* path);
     Path(const char* folder, const char* file);
     Path(const StringId& pathId);
@@ -33,10 +34,12 @@ public:
     PathError GetBaseName(std::string& outBaseName) const;
     PathError GetBaseNameExtension(std::string& outBaseNameExtension) const;
     std::string GetFullPath() const;
+    const char* GetFullPathRef() const;
 
     bool IsFile() const;
     bool IsDirectory() const;
     bool IsValid() const;
+    StringId GetPathId() const { return m_PathId; }
 private:
     /* Cleans up invalid tokens from path */
     void Sanitize(const char* path);

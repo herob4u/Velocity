@@ -81,6 +81,11 @@ PathError Path::GetBaseNameExtension(const std::string& path, std::string& outBa
     return PathError::NONE;
 }
 
+Path::Path()
+    : m_PathId(StringId::NONE)
+{
+}
+
 Path::Path(const char* path)
 {
     ASSERT(path, "Null path string");
@@ -159,6 +164,11 @@ PathError Path::GetBaseNameExtension(std::string& outBaseNameExtension) const
 std::string Path::GetFullPath() const
 {
     return m_PathId.ToString();
+}
+
+const char* Path::GetFullPathRef() const
+{
+    return m_PathId.ToStringRef();
 }
 
 bool Path::IsFile() const

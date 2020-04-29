@@ -184,6 +184,18 @@ std::string StringId::ToString() const
     return "";
 }
 
+const char* StringId::ToStringRef() const
+{
+    const StringIdElement* element = GetStringIdTable().Find(Id, Instance);
+
+    if(element)
+    {
+        return element->DisplayString;
+    }
+
+    return nullptr;
+}
+
 std::string StringId::DebugDump() const
 {
     static std::string titleA = "ID: ";

@@ -4,7 +4,7 @@
 // Assertions
 #ifdef VCT_DEBUG
     #ifdef VCT_PLATFORM_WINDOWS
-        #define ASSERT(x, ...)  if((!x)){VCT_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak();}
+        #define ASSERT(x, ...)  if(!(x)){VCT_ERROR("Assertion Failed: {0}", __VA_ARGS__); __debugbreak();}
     #elif VCT_PLATFORM_LINUX
         #define ASSERT(x, ...)  if((!x)){VCT_ERROR("Assertion Failed: {0}", __VA_ARGS__); raise(SIGABRT);}
     #endif
@@ -24,6 +24,11 @@
 
 // Helpers
 #define BIND_FN(x) std::bind(x, this, std::placeholders::_1)
+#define BIND_MFN_1(x, inObject) std::bind(x, inObject, std::placeholders::_1) 
+#define BIND_MFN_2(x, inObject) std::bind(x, inObject, std::placeholders::_1, std::placeholders::_2) 
+#define BIND_MFN_3(x, inObject) std::bind(x, inObject, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3) 
+#define BIND_MFN_4(x, inObject) std::bind(x, inObject, std::placeholders::_1, std::placeholders::_2, std::placeholders::_3, std::placeholders::_4) 
+
 #define BIT(n) (1 << n)
 namespace Vct
 {
