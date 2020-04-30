@@ -1,37 +1,10 @@
 #pragma once
 
 #include "Engine/Core/Types/Path.h"
-#include <deque>
-
-struct FileContent
-{
-    FileContent()
-        : Data(nullptr)
-        , NumBytes(0)
-    {
-    }
-
-    ~FileContent()
-    {
-        //Release();
-    }
-
-    void Release()
-    {
-        if(Data)
-            free(Data);
-
-        Data = nullptr;
-        NumBytes = 0;
-    }
-
-    void* Data;
-    size_t NumBytes;
-};
+#include <fstream>
 
 /* FileLoadedDelegate(bool success, void* data, size_t numBytes) */
-using FileLoadedDelegate = std::function<void(bool, FileContent)>;
-using FileWriteDelegate  = std::function<void(bool)>;
+using FileLoadedDelegate = std::function<void(bool, void*, size_t)>;
 
 enum class FileError
 {
@@ -51,35 +24,32 @@ struct FileHandle
 public:
     friend class FileMgr;
 
-    FileHandle(const Path& path, FileLoadedDelegate onFileLoaded)
-        : FilePath(path)
-        , Callback(onFileLoaded)
-        , bIsLoaded(false)
-        , bPendingWrite(false)
-        , bPendingRead(false)
+    FileHandle(StringId id)
+        : Id(id)
     {
     }
 
-    StringId GetFileId() const { return FilePath.GetPathId(); }
-    bool IsLoaded() const;
-    bool CanRead() const;
-    bool CanWrite() const;
+    FileHandle()
+        : Id(StringId::NONE)
+    {
+    }
 
-    /* Synchronous File Operations */
-    FileError Load(FileContent& outContent);
-    FileError Replace(const FileContent& content);
-    FileError Swap(FileHandle& Other);
+    bool IsValid() const { return Id != StringId::NONE; }
+    const StringId Id;
+};
 
-    bool operator==(const FileHandle& Other) { return FilePath == Other.FilePath; }
-private:
-    bool CheckPermission(const char* mode) const;
+struct AsyncItem
+{
+    AsyncItem(const Path& filePath, FileLoadedDelegate cb)
+        : FilePath(filePath)
+        , Callback(cb)
+        , bCancelled(false)
+    {
+    }
 
     Path FilePath;
-    bool bIsLoaded;
-    bool bPendingWrite;
-    bool bPendingRead;
     FileLoadedDelegate Callback;
-    FileWriteDelegate WriteCallback;
+    bool bCancelled;
 };
 
 /* @TODO: Use FileHandles for synchronous operations exclusively. Async operations are done via the FileMgr 
@@ -89,30 +59,37 @@ class FileMgr
 public:
     FileMgr();
 
-    FileHandle& GetFile(const Path& path);
+    void SetBasePath(const char* basepath);
+
+    FileHandle GetFile(const Path& path);
+    FileHandle LoadAsync(const Path& inputFilePath, FileLoadedDelegate onFileLoaded);
+    bool LoadSync(std::fstream& file, void** outData, size_t& outNumBytes);
+    void Cancel(const FileHandle& handle);
+
     static FileMgr& Get();
 
 private:
 private:
-    std::vector<FileHandle> m_FileHandles;
-
     class FileIOTask
     {
         public:
-        void EnqueueFile(FileHandle& fileHandle);
-        virtual void Execute() = 0;
+        FileIOTask(FileMgr& owner);
+        void EnqueueFile(const Path& fileHandle, FileLoadedDelegate onFileLoaded);
+        void Cancel(const StringId& id);
+        void Stop();
+
+        protected:
+        void Execute();
 
         private:
-        std::deque<FileHandle&> m_queue; // handles contain actual stream object, callback, and load status
+        std::list<struct AsyncItem> m_queue; // handles contain actual stream object, callback, and load status
         std::thread m_workThread;
         std::mutex m_queueMutex;
         std::fstream m_FileStream;
+        bool m_Finished = false;
+        FileMgr& m_FileMgr;
     };
 
-    class FileReadTask : public FileIOTask { virtual void Execute() override; };
-    class FileWriteTask : public FileIOTask { virtual void Execute() override; };
-
-    FileReadTask m_ReadTask;
-    FileWriteTask m_WriteTask;
-    //FileIOTask m_Task;
+    FileIOTask m_Task;
+    Path m_BasePath;
 };

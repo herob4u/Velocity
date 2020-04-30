@@ -5,17 +5,40 @@
 #include <chrono>
 
 
-void FileMgr::FileIOTask::EnqueueFile(FileHandle& fileHandle)
+
+FileMgr::FileIOTask::FileIOTask(FileMgr& owner)
+    : m_FileMgr(owner)
+{
+    m_workThread = std::thread(&FileIOTask::Execute, this);
+}
+
+void FileMgr::FileIOTask::EnqueueFile(const Path& filePath, FileLoadedDelegate onFileLoaded)
+{
+    // Wouldnt this cause the main thread to hang?
+    std::unique_lock<std::mutex> queueLock(m_queueMutex);
+    m_queue.emplace_back(filePath, onFileLoaded);
+}
+
+void FileMgr::FileIOTask::Cancel(const StringId& id)
 {
     std::unique_lock<std::mutex> queueLock(m_queueMutex);
-    m_queue.push_back(fileHandle);
+
+    for(auto it = m_queue.begin(); it != m_queue.end(); it++)
+    {
+        if(it->FilePath.GetPathId() == id)
+        {
+            VCT_WARN("Cancelled file '{0}'", id.ToStringRef());
+            it->bCancelled = true;
+            return;
+        }
+    }
 }
 
 void FileMgr::FileIOTask::Execute()
 {
     std::unique_lock<std::mutex> queueLock(m_queueMutex, std::defer_lock);
 
-    while(true)
+    while(!m_Finished)
     {
         if(m_queue.size() > 0)
         {
@@ -24,19 +47,33 @@ void FileMgr::FileIOTask::Execute()
                 // Verify if there are elements in the queue
                 if(m_queue.size() > 0)
                 {
-                    FileHandle fileHandle = m_queue.front();
+                    // <CRITICAL>
+                    AsyncItem item = m_queue.front();
                     m_queue.pop_front();
+                    // </CRITICAL>
 
-                    FileContent outContent;
-                    FileError err = fileHandle.Load(outContent);
-                    ASSERT(err == FileError::NONE, "Error code {0} when trying to load file", err);
+                    // Critical section is done, can process the data without the mutex
+                    queueLock.unlock();
 
-                    FileLoadedDelegate& cb = fileHandle.Callback;
-                    
-                    if(cb)
-                        cb( (err == FileError::NONE), outContent);
+                    // Items prematurely cancelled by the user are ignored and discared when popped.
+                    if(!item.bCancelled)
+                    {
+                        m_FileStream.open(item.FilePath.GetFullPathRef(), std::ios::in);
+                        ASSERT(m_FileStream.good(), "Failed to open file '{0}'", item.FilePath.GetFullPathRef());
+
+                        void* data = nullptr;
+                        size_t numBytes = 0;
+                        bool loaded = m_FileMgr.LoadSync(m_FileStream, &data, numBytes);
+
+                        // Execute the callback method if applicable (Why wouldn't there be a callback, useless work)
+                        if(item.Callback)
+                        {
+                            item.Callback(loaded, data, numBytes);
+                        }
+                        
+                        m_FileStream.close();
+                    }
                 }
-                queueLock.unlock();
             }
         }
         else
@@ -46,6 +83,12 @@ void FileMgr::FileIOTask::Execute()
     }
 }
 
+void FileMgr::FileIOTask::Stop()
+{
+    m_Finished = true;
+}
+
+#if 0
 bool FileHandle::IsLoaded() const
 {
     return false;
@@ -150,34 +193,64 @@ bool FileHandle::CheckPermission(const char* mode) const
 
     return false;
 }
+#endif
 
 FileMgr::FileMgr()
+    : m_Task(*this)
 {
 }
 
-FileHandle& FileMgr::GetFile(const Path& path)
+void FileMgr::SetBasePath(const char* basepath)
 {
-    auto found = std::find(m_FileHandles.begin(), m_FileHandles.end(), [=](const FileHandle& A) { return A.GetFileId() == path.GetPathId(); });
-    if(found != m_FileHandles.end())
+    m_BasePath = Path(basepath);
+}
+
+FileHandle FileMgr::GetFile(const Path& path)
+{
+    // @TODO
+    return FileHandle();
+}
+
+FileHandle FileMgr::LoadAsync(const Path& inputFilePath, FileLoadedDelegate onFileLoaded)
+{
+    const Path newPath = (m_BasePath + inputFilePath);
+    m_Task.EnqueueFile(newPath, onFileLoaded);
+    return FileHandle(newPath.GetPathId());
+}
+
+bool FileMgr::LoadSync(std::fstream& file, void ** outData, size_t& outNumBytes)
+{
+    if(!outData)
     {
-        return *found;
+        VCT_WARN("No target buffer found");
+        return false;
+    }
+    ASSERT(!*outData, "Expected empty buffer");
+    ASSERT(file.is_open(), "No currently open file");
+    if(!file.is_open() || !file.good())
+    {
+        VCT_WARN("File could not be opened");
+        return false;
     }
 
-    m_FileHandles.emplace_back(FileHandle(path, nullptr));
-    return m_FileHandles.back();
+    file.seekg(0, std::ios::end);
+    outNumBytes = file.tellg();
+    file.seekg(0, std::ios::beg);
+
+    // Reserve memory for data
+    *outData = malloc(sizeof(char) * outNumBytes);
+    file.read((char*)*outData, outNumBytes);
+
+    return true;
+}
+
+void FileMgr::Cancel(const FileHandle& handle)
+{
+    m_Task.Cancel(handle.Id);
 }
 
 FileMgr& FileMgr::Get()
 {
     static FileMgr instance;
     return instance;
-}
-
-
-void FileMgr::FileReadTask::Execute()
-{
-}
-
-void FileMgr::FileWriteTask::Execute()
-{
 }
