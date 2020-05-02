@@ -3,6 +3,8 @@
 #include "Engine/Core/Core.h"
 #include "StringId.h"
 
+#define MAX_PATH_LENGTH 255
+
 enum PathError
 {
     NONE = 0,

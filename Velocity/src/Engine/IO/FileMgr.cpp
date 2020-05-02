@@ -244,6 +244,57 @@ bool FileMgr::LoadSync(std::fstream& file, void ** outData, size_t& outNumBytes)
     return true;
 }
 
+bool FileMgr::Rename(const char* from, const char* to)
+{
+    auto err = rename(from, to);
+    return (err == 0);
+}
+
+bool FileMgr::Move(const char* from, const char* to)
+{
+    return Rename(from, to);
+}
+
+bool FileMgr::Copy(const char* from, const char* to)
+{
+    std::fstream file(from, std::ios::in);
+    if(!file)
+    {
+        return false;
+    }
+
+    void* data = nullptr;
+    size_t bytes = 0;
+
+    bool success = LoadSync(file, &data, bytes);
+
+    if(!success)
+    {
+        return false;
+    }
+    file.close();
+    file.open(to, std::ios::out);
+    ASSERT(file.good(), "INVALID OUTPUT FILE!");
+
+    file.write((char*)data, bytes);
+    file.close();
+
+    free(data);
+    
+    return true;
+}
+
+bool FileMgr::Exists(const char* filepath)
+{
+    return CheckPermission(filepath, "r");
+}
+
+bool FileMgr::Delete(const char* filepath)
+{
+    auto err = remove(filepath);
+    return (err == 0);
+}
+
 void FileMgr::Cancel(const FileHandle& handle)
 {
     m_Task.Cancel(handle.Id);
@@ -253,4 +304,21 @@ FileMgr& FileMgr::Get()
 {
     static FileMgr instance;
     return instance;
+}
+
+bool FileMgr::CheckPermission(const char* filepath, const char* mode) const
+{
+    if(!filepath || !mode)
+        return false;
+
+    FILE* file = nullptr;
+    auto err = fopen_s(&file, filepath, mode);
+
+    if(!err)
+    {
+        fclose(file);
+        return true;
+    }
+
+    return false;
 }

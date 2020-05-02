@@ -62,14 +62,11 @@ int main(int argc, char** argv)
     FileMgr& mgr = FileMgr::Get();
     mgr.SetBasePath(ASSET_DIR);
 
-    for(int i = 0; i < 10000; i++)
-    {
-        mgr.LoadAsync("asset1.txt", OnAsyncLoad);
-        mgr.LoadAsync("asset2.txt", OnAsyncLoad);
-        mgr.LoadAsync("asset3.txt", OnAsyncLoad);
-        mgr.LoadAsync("asset4.txt", OnAsyncLoad);
-        mgr.LoadAsync("asset5.txt", OnAsyncLoad);
-    }
+    mgr.LoadAsync("asset1.txt", OnAsyncLoad);
+    mgr.LoadAsync("asset2.txt", OnAsyncLoad);
+    mgr.LoadAsync("asset3.txt", OnAsyncLoad);
+    mgr.LoadAsync("asset4.txt", OnAsyncLoad);
+    mgr.LoadAsync("asset5.txt", OnAsyncLoad);
     
     Vct::Application app = Vct::Application();
     app.PushLayer(new Vct::ViewportLayer());

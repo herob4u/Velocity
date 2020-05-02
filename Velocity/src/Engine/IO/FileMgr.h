@@ -62,13 +62,23 @@ public:
     void SetBasePath(const char* basepath);
 
     FileHandle GetFile(const Path& path);
-    FileHandle LoadAsync(const Path& inputFilePath, FileLoadedDelegate onFileLoaded);
+
+    // Sync Operations
     bool LoadSync(std::fstream& file, void** outData, size_t& outNumBytes);
+    bool Rename(const char* from, const char* to);
+    bool Move(const char* from, const char* to);
+    bool Copy(const char* from, const char* to);
+    bool Exists(const char* filepath);
+    bool Delete(const char* filepath);
+
+    // Async Operations
+    FileHandle LoadAsync(const Path& inputFilePath, FileLoadedDelegate onFileLoaded);
     void Cancel(const FileHandle& handle);
 
     static FileMgr& Get();
 
 private:
+    bool CheckPermission(const char* filepath, const char* mode) const;
 private:
     class FileIOTask
     {
