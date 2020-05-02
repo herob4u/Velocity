@@ -6,6 +6,7 @@
 
 #include "Engine/Resources/ResourceMgr.h"
 #include "Engine/IO/FileMgr.h"
+#include "Engine/IO/FileStream.h"
 #include <omp.h>
 
 class TextResource : public Resource
@@ -43,22 +44,6 @@ int main(int argc, char** argv)
 
     VCT_INFO("MAIN!");
 
-    /*
-    TextResource* asset1 = new TextResource(ResourceMgr::GetResourcePath("asset1.txt"));
-    TextResource* asset2 = new TextResource(ResourceMgr::GetResourcePath("asset2.txt"));
-    TextResource* asset3 = new TextResource(ResourceMgr::GetResourcePath("asset3.txt"));
-    TextResource* asset4 = new TextResource(ResourceMgr::GetResourcePath("asset4.txt"));
-    TextResource* asset5 = new TextResource(ResourceMgr::GetResourcePath("asset5.txt"));
-
-    StreamableMgr streamableMgr;
-    streamableMgr.EnqueueResource(asset1, BIND_MFN_2(&TextResource::OnLoad, asset1));
-    streamableMgr.EnqueueResource(asset2, BIND_MFN_2(&TextResource::OnLoad, asset2));
-    streamableMgr.EnqueueResource(asset3, BIND_MFN_2(&TextResource::OnLoad, asset3));
-    streamableMgr.EnqueueResource(asset4, BIND_MFN_2(&TextResource::OnLoad, asset4));
-    streamableMgr.EnqueueResource(asset5, BIND_MFN_2(&TextResource::OnLoad, asset5));
-
-    streamableMgr.Finish();
-    */
     FileMgr& mgr = FileMgr::Get();
     mgr.SetBasePath(ASSET_DIR);
 
@@ -68,6 +53,23 @@ int main(int argc, char** argv)
     mgr.LoadAsync("asset4.txt", OnAsyncLoad);
     mgr.LoadAsync("asset5.txt", OnAsyncLoad);
     
+    InputFileStream ifile;
+    ifile.Open((std::string(ASSET_DIR) + "asset1.txt").c_str());
+
+    char str[13] = "aaaaaaaaaaaa";
+    VCT_INFO("Curr String: {0}", str);
+
+    ifile >> str;
+
+    VCT_INFO("Got String: {0}", str);
+
+    char c;
+    while(ifile)
+    {
+        ifile >> c;
+        VCT_INFO("{0}", c);
+    }
+
     Vct::Application app = Vct::Application();
     app.PushLayer(new Vct::ViewportLayer());
     app.Run();

@@ -23,6 +23,17 @@ public:
         Read(&outVal, sizeof(T));
         return outVal;
     }
+
+    IInputStream& operator >> (char* str);
+    IInputStream& operator >> (char& c);
+    IInputStream& operator >> (float& f);
+    IInputStream& operator >> (double& d);
+    IInputStream& operator >> (uint64_t& ui64);
+    IInputStream& operator >> (uint32_t& ui32);
+    IInputStream& operator >> (uint16_t& ui16);
+    IInputStream& operator >> (int64_t& i64);
+    IInputStream& operator >> (int32_t& i32);
+    IInputStream& operator >> (int16_t& i16);
 };
 
 // Binary output stream
@@ -35,7 +46,7 @@ public:
     template<typename T>
     bool Write(const T& val)
     {
-        return Write(&T, sizeof(T));
+        return Write(&val, sizeof(T));
     }
 
     IOutputStream& operator << (char c);
