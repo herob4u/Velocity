@@ -58,8 +58,8 @@ void FileMgr::FileIOTask::Execute()
                     // Items prematurely cancelled by the user are ignored and discared when popped.
                     if(!item.bCancelled)
                     {
-                        m_FileStream.open(item.FilePath.GetFullPathRef(), std::ios::in);
-                        ASSERT(m_FileStream.good(), "Failed to open file '{0}'", item.FilePath.GetFullPathRef());
+                        m_FileStream.Open(item.FilePath);
+                        ASSERT(m_FileStream, "Failed to open file '{0}'", item.FilePath.GetFullPathRef());
 
                         void* data = nullptr;
                         size_t numBytes = 0;
@@ -71,7 +71,8 @@ void FileMgr::FileIOTask::Execute()
                             item.Callback(loaded, data, numBytes);
                         }
                         
-                        m_FileStream.close();
+                        m_FileStream.Close();
+                        free(data);
                     }
                 }
             }

@@ -2,7 +2,6 @@
 
 #include "Engine/Core/Types/Path.h"
 #include "FileStream.h"
-#include <fstream>
 
 /* FileLoadedDelegate(bool success, void* data, size_t numBytes) */
 using FileLoadedDelegate = std::function<void(bool, void*, size_t)>;
@@ -118,7 +117,7 @@ private:
         std::list<struct AsyncItem> m_queue; // handles contain actual stream object, callback, and load status
         std::thread m_workThread;
         std::mutex m_queueMutex;
-        std::fstream m_FileStream;
+        InputFileStream m_FileStream;
         bool m_Finished = false;
         FileMgr& m_FileMgr;
     };

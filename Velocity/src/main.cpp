@@ -19,18 +19,20 @@ public:
 
     virtual bool Load(const void* const rawBinary, size_t bytes) override
     {
-        return false;
+        if(!rawBinary || bytes == 0)
+            return false;
+
+        std::string s = std::string((char*)rawBinary, bytes);
+        VCT_INFO("Text Loaded: {0}", s);
+
+        return true;
     }
     virtual void Unload() override
     {
 
     }
 
-protected:
-    virtual void OnModified() override {}
-    virtual void OnUnloaded() override {}
-    virtual bool OnLoaded(bool success, const void* const data, size_t bytes) override {return false;}
-    
+protected:    
     void OnLoad(const void* data, size_t bytes)
     {
         int id = omp_get_thread_num();

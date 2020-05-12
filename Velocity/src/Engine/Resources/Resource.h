@@ -52,9 +52,9 @@ protected:
     */
     void BeginLoad(bool bBlocking = false);
 
-    virtual void OnModified() = 0;
-    virtual bool OnLoaded(bool success, const void* const data, size_t bytes) = 0;
-    virtual void OnUnloaded() = 0;
+    virtual void OnModified() {}
+    virtual bool OnLoaded(bool success, const void* const data, size_t bytes);
+    virtual void OnUnloaded() {}
 
 private:
     Path m_ResPath;

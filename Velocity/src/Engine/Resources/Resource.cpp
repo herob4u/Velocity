@@ -56,6 +56,14 @@ void Resource::BeginLoad(bool bBlocking)
     }
 }
 
+bool Resource::OnLoaded(bool success, const void* const data, size_t bytes)
+{
+    if(!success)
+        return false;
+
+    return Load(data, bytes);
+}
+
 /*===========================================================
                         RESOURCE PTR
  *===========================================================*/
