@@ -39,6 +39,8 @@ protected:
 class StringId
 {
 public:
+    friend struct std::hash<StringId>;
+
     StringId(const std::string& str);
     StringId(const char* str);
     StringId(const StringId& Other = StringId::NONE);
@@ -67,6 +69,20 @@ protected:
 private:
 
 };
+
+#include "Engine/Utils/HashCombine.h"
+namespace std {
+    template <> struct hash<StringId>
+    {
+        size_t operator()(const StringId & x) const
+        {
+            size_t seed = 0;
+            hash_combine(seed, x.Id, x.Instance);
+            return seed;
+            //return hash<unsigned int>()(x.Id);
+        }
+    };
+}
 
 FORCEINLINE bool StringId::operator==(const StringId& Other) const
 {

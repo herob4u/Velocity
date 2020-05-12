@@ -12,7 +12,14 @@ InputFileStream::~InputFileStream()
 bool InputFileStream::Open(const char* filepath)
 {
     auto err = fopen_s(&m_Handle, filepath, "r");
-    return (err == 0);
+    
+    if(err != 0)
+    {
+        m_Handle = nullptr;
+        return false;
+    }
+
+    return true;
 }
 
 bool InputFileStream::Open(const Path& filepath)
@@ -22,7 +29,7 @@ bool InputFileStream::Open(const Path& filepath)
 
 void InputFileStream::Close()
 {
-    ASSERT(m_Handle, "File was never open closed!");
+    ASSERT(m_Handle, "File was never open!");
     fclose(m_Handle);
     m_Handle = nullptr;
 }
@@ -87,7 +94,56 @@ uint64_t InputFileStream::GetOffset() const
     return (uint64_t)pos;
 }
 
+bool InputFileStream::IsOpen() const
+{
+    return (m_Handle != nullptr);
+}
+
 InputFileStream::operator bool() const
 {
     return (m_Handle && feof(m_Handle) == 0);
+}
+
+
+
+OutputFileStream::~OutputFileStream()
+{
+    if(m_Handle)
+        Close();
+}
+
+bool OutputFileStream::Open(const char* filepath)
+{
+    auto err = fopen_s(&m_Handle, filepath, "w");
+    
+    if(err != 0)
+    {
+        m_Handle = nullptr;
+        return false;
+    }
+    
+    return true;
+}
+
+bool OutputFileStream::Open(const Path& filepath)
+{
+    return Open(filepath.GetFullPathRef());
+}
+
+void OutputFileStream::Close()
+{
+    ASSERT(m_Handle, "File was never open!");
+    fclose(m_Handle);
+    m_Handle = nullptr;
+}
+
+bool OutputFileStream::Write(const void* data, size_t numBytes)
+{
+    if(!m_Handle)
+    {
+        VCT_WARN("Write failed: No file open for write");
+        return false;
+    }
+
+    return (fwrite(data, sizeof(char), numBytes, m_Handle) == numBytes);
 }

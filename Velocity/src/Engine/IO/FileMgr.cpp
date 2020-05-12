@@ -202,23 +202,37 @@ FileMgr::FileMgr()
 
 void FileMgr::SetBasePath(const char* basepath)
 {
-    m_BasePath = Path(basepath);
+    size_t len = strlen(basepath);
+    if(len >= MAX_PATH_LENGTH)
+    {
+        ASSERT(false, "Path length exceeds maximum allowable length");
+        return;
+    }
+
+    memcpy(m_BasePath, basepath, len);
 }
 
-FileHandle FileMgr::GetFile(const Path& path)
+Path FileMgr::GetAbsPath(const Path& path) const
 {
-    // @TODO
-    return FileHandle();
+    // Initialized to \0
+    char absPath[MAX_PATH_LENGTH];
+    const char* relPath = path.GetFullPathRef();
+
+    GetAbsPath(absPath, relPath);
+
+    return Path(absPath);
 }
 
 FileHandle FileMgr::LoadAsync(const Path& inputFilePath, FileLoadedDelegate onFileLoaded)
 {
-    const Path newPath = (m_BasePath + inputFilePath);
-    m_Task.EnqueueFile(newPath, onFileLoaded);
-    return FileHandle(newPath.GetPathId());
+    //const Path newPath = (m_BasePath + inputFilePath);
+    //m_Task.EnqueueFile(newPath, onFileLoaded);
+    m_Task.EnqueueFile(inputFilePath, onFileLoaded);
+    return FileHandle(inputFilePath.GetPathId());
+    //return FileHandle(newPath.GetPathId());
 }
 
-bool FileMgr::LoadSync(std::fstream& file, void ** outData, size_t& outNumBytes)
+bool FileMgr::LoadSync(std::fstream& file, void ** outData, size_t& outNumBytes) const
 {
     if(!outData)
     {
@@ -242,6 +256,30 @@ bool FileMgr::LoadSync(std::fstream& file, void ** outData, size_t& outNumBytes)
     file.read((char*)*outData, outNumBytes);
 
     return true;
+}
+
+bool FileMgr::LoadSync(InputFileStream& inputFile, void** outData, size_t& outNumBytes) const
+{
+    if(!outData)
+    {
+        VCT_WARN("No target buffer found");
+        return false;
+    }
+
+    ASSERT(!*outData, "Expected empty buffer");
+    
+    // File not open/does not exist
+    if(!inputFile)
+        return false;
+
+    outNumBytes = inputFile.Size();
+    
+    // Nothing to load
+    if(outNumBytes == 0)
+        return false;
+
+    *outData = malloc(sizeof(char) * outNumBytes);
+    return inputFile.Read(*outData, outNumBytes);
 }
 
 bool FileMgr::Rename(const char* from, const char* to)
@@ -304,6 +342,30 @@ FileMgr& FileMgr::Get()
 {
     static FileMgr instance;
     return instance;
+}
+
+void FileMgr::GetAbsPath(char outAbsPath[MAX_PATH_LENGTH], const char* relPath) const
+{
+    int srcPtr = 0;
+    int destPtr = 0;
+
+    // We guarantee m_BasePath is exclusively less than MAX_PATH_LENGTH, no need to check here
+    while(m_BasePath[srcPtr] != '\0')
+    {
+        outAbsPath[destPtr++] = m_BasePath[srcPtr++];
+    }
+
+    // Reset the source pointer to begin iterating over the second string
+    srcPtr = 0;
+
+    // Add to the abs path while ensuring it doesn't exceed the maximum length
+    while(relPath[srcPtr] != '\0')
+    {
+        ASSERT(destPtr < (MAX_PATH_LENGTH-1), "Path exceeds maximum allowable length");
+        outAbsPath[destPtr++] = relPath[srcPtr++];
+    }
+
+    outAbsPath[destPtr] = '\0';
 }
 
 bool FileMgr::CheckPermission(const char* filepath, const char* mode) const

@@ -2,14 +2,10 @@
 #include "Stream.h"
 #include "Engine/Core/Types/Path.h"
 
+// @TODO: const correct some of the functions (i.e overloaded Read const that returns position after reading)
 class InputFileStream final : public IInputStream
 {
 public:
-    enum class Mode
-    {
-        BINARY
-    };
-
     ~InputFileStream();
     bool Open(const char* filepath);
     bool Open(const Path& filepath);
@@ -24,15 +20,21 @@ public:
     bool SetPos(uint64_t pos);
     uint64_t GetOffset() const;
 
+    bool IsOpen() const;
     operator bool() const;
 private:
     FILE* m_Handle;
-    size_t m_Size;
 };
 
 class OutputFileStream final : public IOutputStream
 {
 public:
+    ~OutputFileStream();
+    bool Open(const char* filepath);
+    bool Open(const Path& filepath);
+    void Close();
+
+    virtual bool Write(const void* data, size_t numBytes) override;
 
 private:
     FILE* m_Handle;

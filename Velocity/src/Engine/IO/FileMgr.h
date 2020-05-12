@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Types/Path.h"
+#include "FileStream.h"
 #include <fstream>
 
 /* FileLoadedDelegate(bool success, void* data, size_t numBytes) */
@@ -52,6 +53,23 @@ struct AsyncItem
     bool bCancelled;
 };
 
+struct AsyncBatchItem
+{
+    AsyncBatchItem(const std::vector<Path>& filePaths, FileLoadedDelegate cb)
+        : Callback(cb)
+        , bCancelled(false)
+    {
+        FilePaths.reserve(filePaths.size());
+        for(const Path& path : filePaths)
+        {
+            FilePaths.emplace_back(path);
+        }
+    }
+
+    std::vector<Path> FilePaths;
+    FileLoadedDelegate Callback;
+    bool bCancelled;
+};
 /* @TODO: Use FileHandles for synchronous operations exclusively. Async operations are done via the FileMgr 
    by providing the file path directly. A callback method then returns the handle or associated data */
 class FileMgr
@@ -61,10 +79,15 @@ public:
 
     void SetBasePath(const char* basepath);
 
-    FileHandle GetFile(const Path& path);
+    /*  Given a relative file path, returns an absolute path with respect to the manager's base/root path.
+    *   This is rapdily faster than performing path concatenation using the + operator, the concatenated path
+    *   is created in place on the stack, from which a new path is constructed and returned.
+     */
+    Path GetAbsPath(const Path& path) const;
 
     // Sync Operations
-    bool LoadSync(std::fstream& file, void** outData, size_t& outNumBytes);
+    bool LoadSync(std::fstream& file, void** outData, size_t& outNumBytes) const;
+    bool LoadSync(InputFileStream& inputFile, void** outData, size_t& outNumBytes) const;
     bool Rename(const char* from, const char* to);
     bool Move(const char* from, const char* to);
     bool Copy(const char* from, const char* to);
@@ -78,6 +101,7 @@ public:
     static FileMgr& Get();
 
 private:
+    void GetAbsPath(char outAbsPath[MAX_PATH_LENGTH], const char* file) const;
     bool CheckPermission(const char* filepath, const char* mode) const;
 private:
     class FileIOTask
@@ -91,7 +115,6 @@ private:
         protected:
         void Execute();
 
-        private:
         std::list<struct AsyncItem> m_queue; // handles contain actual stream object, callback, and load status
         std::thread m_workThread;
         std::mutex m_queueMutex;
@@ -101,5 +124,5 @@ private:
     };
 
     FileIOTask m_Task;
-    Path m_BasePath;
+    char m_BasePath[MAX_PATH_LENGTH];
 };

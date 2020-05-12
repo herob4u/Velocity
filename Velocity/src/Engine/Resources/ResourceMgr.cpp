@@ -1,125 +1,125 @@
 #include "vctPCH.h"
 #include "ResourceMgr.h"
 
-#include <fstream>
+#include "Engine/IO/FileMgr.h"
 
-FileLoadTask::FileLoadTask(const char* filepath, LoadCallback onLoadComplete)
-    : m_File(filepath)
-    , m_Data(nullptr)
-    , m_Bytes(0)
-    , m_OnLoadComplete(onLoadComplete)
+void ResourceMgr::Load(const Path& resPath)
 {
-}
-
-FileLoadTask::~FileLoadTask()
-{
-    if(m_Data)
-        free(m_Data);
-}
-
-void FileLoadTask::LoadData()
-{
-//#define CPP_FSTREAM
-
-#ifdef CPP_FSTREAM
-    std::ifstream file(m_File, std::ios::binary);
-
-    if(!file.good())
+    auto found = m_ResourceList.find(resPath.GetPathId());
+    if(found == m_ResourceList.end())
     {
-        VCT_WARN("Failed to open file '{0}' . File does not exist or is corrupt.");
-        return;
+        Resource* res = CreateResource(resPath);
+        ASSERT(res, "Failed to instantiate resource from '{0}'", resPath.GetFullPathRef());
+        m_ResourceList.emplace(resPath.GetPathId(), res);
+        res->BeginLoad();
     }
-
-    file.seekg(0, file.end);
-    m_Bytes = file.tellg();
-    file.seekg(0, file.beg);
-
-    m_Data = (char*)malloc(sizeof(uint8_t) * m_Bytes);
-
-    file.read(m_Data, m_Bytes);
-    file.close();
-#else
-    FILE* file = nullptr;
-    auto err = fopen_s(&file, m_File, "r");
-
-    if(err != 0)
-    {
-        VCT_WARN("Failed to open file '{0}' . File does not exist or is corrupt.");
-        return;
-    }
-
-    fseek(file, 0, SEEK_END);
-    m_Bytes = ftell(file);
-    fseek(file, 0, SEEK_SET);
-
-    m_Data = (char*)malloc(sizeof(char) * m_Bytes + 1);
-
-    fread(m_Data, sizeof(char), m_Bytes, file);
-    fclose(file);
-
-    // Terminate file with null character
-    m_Data[m_Bytes] = 0;
-
-#endif // CPP_FSTREAM
-
-    if(m_OnLoadComplete)
-    {
-        m_OnLoadComplete((const void*)m_Data, m_Bytes);
-    }
-}
-
-void StreamableMgr::EnqueueResource(Resource* res, LoadCallback onLoadComplete)
-{
-    if(!res)
-        return;
-
-    Resource& resRef = *res;
-    if(!resRef.IsValid())
-    {
-        VCT_WARN("Cannt load resource, not pointing to a valid resource path");
-    }
-
-    if(!resRef.IsLoaded())
-    {
-        const char* pathRef = resRef.GetPath().GetFullPathRef();
-        if(!pathRef)
-        {
-            VCT_WARN("Cannot load resource, invalid path provided");
-        }
-
-        m_Tasks.emplace_back(FileLoadTask(pathRef, onLoadComplete));
-    }
-}
-
-void StreamableMgr::EnqueueResource(const std::vector<Resource*>& res, LoadCallback onLoadComplete)
-{
-    m_Tasks.reserve(m_Tasks.size() + res.size() + 1);
-    for(int i = 0; i < res.size(); i++)
-    {
-        EnqueueResource(res[i], onLoadComplete);
-    }
-}
-
-void StreamableMgr::Finish(bool blocking)
-{
-    if(blocking)
-        FinishInternal();
     else
     {
-        m_WorkerThread = std::thread(&StreamableMgr::FinishInternal, this);
+        Resource* res = found->second;
+        ASSERT(res, "An allocated resource can never be null");
+        
+        if(!res->IsLoaded())
+            res->BeginLoad();
     }
-    VCT_TRACE("[MAIN]: Finished Processing Tasks");
 }
 
-void StreamableMgr::FinishInternal()
+void ResourceMgr::LoadAsync(const std::vector<Path>& resPaths, OnResourcesLoaded cb)
 {
-    for(int i = 0; i < m_Tasks.size(); i++)
+    FileMgr& mgr = FileMgr::Get();
+    std::vector<Resource*> resources;
+    resources.reserve(resPaths.size());
+
+    for(const Path& path : resPaths)
     {
-        m_Tasks[i].LoadData();
+        auto found = m_ResourceList.find(path.GetPathId());
+
+        // @TODO: Need to first check if path leads to a valid file on disk...
+        if(found == m_ResourceList.end())
+        {
+            // Allocate a new resource instance
+            auto pair = m_ResourceList.emplace(path.GetPathId(), CreateResource(path));
+            ASSERT(pair.second, "Failed to insert resource");
+            resources.emplace_back(pair.first->second);
+        }
+        else
+        {
+            resources.emplace_back(found->second);
+        }
+    }
+    // Streamable Mgr Enqueue ... Calls Resource->BeginLoad(true);
+    m_ResourceStreamer.EnqueueResources(resources, cb);
+}
+
+void ResourceMgr::Unload(const Path& resPath)
+{
+    auto found = m_ResourceList.find(resPath.GetPathId());
+    ASSERT(found != m_ResourceList.end(), "Attempting to unload a resource that never existed. Should not enter here");
+
+    if(found != m_ResourceList.end())
+    {
+        Resource* res = found->second;
+        ASSERT(res, "An allocated resource can never be null");
+
+        res->Unload();
     }
 }
 
-std::string ResourceMgr::GetResourcePath(const char* res)
+void ResourceMgr::Dump() const
 {
-    return std::string(ASSET_DIR) + std::string(res);
+    if(m_ResourceList.size() == 0)
+        VCT_INFO("ResourceMgr empty");
+
+    for(auto it = m_ResourceList.begin(); it != m_ResourceList.end(); it++)
+    {
+        VCT_INFO("[ResId]: {0}", it->first.ToStringRef());
+        VCT_INFO("[Resource]: {0}", ((void*)it->second));
+    }
+}
+
+ResourceStreamer::ResourceStreamer()
+{
+    m_workThread = std::thread(&ResourceStreamer::Execute, this);
+}
+
+void ResourceStreamer::EnqueueResources(const std::vector<Resource*>& resources, OnResourcesLoaded cb)
+{
+    // @TODO: Which is faster - emplacing within a critical section, or constructing the object, entering the critical section, and pushing the item?
+    // Latter seems to do AT LEAST twice the work of emplacing. So in effect, we will do the same amount of work in the critical section.
+    // Pick the former.
+    std::unique_lock<std::mutex> queueLock(m_queueMutex);
+    m_queue.emplace_back(resources, cb);
+}
+
+void ResourceStreamer::Execute()
+{
+    std::unique_lock<std::mutex> queueLock(m_queueMutex);
+    while(1)
+    {
+        if(m_queue.size() > 0)
+        {
+            if(queueLock.try_lock())
+            {
+                if(m_queue.size() > 0)
+                {
+                    // CRITICAL
+                    AsyncItem item = m_queue.front();
+                    m_queue.pop_front();
+                    // END CRITICAL
+
+                    queueLock.unlock();
+
+                    // Process Item
+                    for(Resource* res : item.Resources)
+                    {
+                        // Blocking load
+                        res->BeginLoad(true);
+                    }
+
+                    if(item.Callback)
+                        item.Callback(item.Resources);
+                }
+            }
+
+        }
+    }
 }
