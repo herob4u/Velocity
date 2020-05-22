@@ -11,6 +11,8 @@
 #include <chrono>
 #include <omp.h>
 
+static Resource::Type TextResourceType("text");
+
 class TextResource : public Resource
 {
 public:
@@ -23,14 +25,17 @@ public:
             return false;
 
         std::string s = std::string((char*)rawBinary, bytes);
-        VCT_INFO("Text Loaded: {0}", s);
-
+        //VCT_INFO("Text Loaded: {0}", s);
+        VCT_INFO("Loaded: {0}", GetPath());
         return true;
     }
+
     virtual void Unload() override
     {
 
     }
+
+    RES_TYPE(TextResourceType)
 
 protected:    
     void OnLoad(const void* data, size_t bytes)
@@ -40,7 +45,7 @@ protected:
     }
 };
 
-class TextResourceMgr : public TResourceMgr<TextResource, TextResourceMgr>
+class TextResourceMgr : public ResourceMgr
 {
 public:
     enum TextFormats
@@ -110,9 +115,28 @@ int main(int argc, char** argv)
     FileMgr& mgr = FileMgr::Get();
     mgr.SetBasePath(ASSET_DIR);
 
-    TextResourceMgr& textMgr = TextResourceMgr::Get();
-    textMgr.Load(mgr.GetAbsPath("asset1.txt"));
-    textMgr.Dump();
+    // Register all resource managers by type
+    ResourceMgrRegistry::Get().Register(TextResourceType, new TextResourceMgr());
+    ResourceMgr* textMgr = ResourceMgrRegistry::Get().GetMgr(TextResourceType);
+    {
+    TResourcePtr<TextResource> asset1(mgr.GetAbsPath("asset1.txt"));
+    if(asset1.Get() == nullptr)
+    {
+        TextResource* textRes = asset1.Load();
+    }
+
+    /*
+    for(int i = 0; i < 100; i++)
+    {
+        textMgr.Load(mgr.GetAbsPath("asset1.txt"));
+        textMgr.Load(mgr.GetAbsPath("asset2.txt"));
+        textMgr.Load(mgr.GetAbsPath("asset3.txt"));
+        textMgr.Load(mgr.GetAbsPath("asset4.txt"));
+        textMgr.Load(mgr.GetAbsPath("asset5.txt"));
+    }
+    */
+    textMgr->Dump();
+    }
 
     Vct::Application app = Vct::Application();
     app.PushLayer(new Vct::ViewportLayer());

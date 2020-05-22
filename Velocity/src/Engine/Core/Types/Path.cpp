@@ -212,3 +212,9 @@ bool Path::IsValid() const
 void Path::Sanitize(const char* path)
 {
 }
+
+std::ostream& operator<<(std::ostream& os, const Path& path)
+{
+    os << path.GetFullPathRef();
+    return os;
+}

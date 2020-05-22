@@ -3,6 +3,23 @@
 
 #include "Engine/IO/FileMgr.h"
 
+Resource* ResourceMgr::GetResource(const Path& resPath)
+{
+    auto found = m_ResourceList.find(resPath.GetPathId());
+    if(found == m_ResourceList.end())
+    {
+        auto pair = m_ResourceList.emplace(resPath.GetPathId(), CreateResource(resPath));
+        ASSERT(pair.second, "Failed to create resource from path '{0}'", resPath.GetFullPathRef());
+
+        return pair.first->second;
+    }
+
+    Resource* res = found->second;
+    ASSERT(res, "Resource was never successfully allocated!");
+    res->IncrementRefCount();
+    return res;
+}
+
 void ResourceMgr::Load(const Path& resPath)
 {
     auto found = m_ResourceList.find(resPath.GetPathId());
@@ -21,6 +38,14 @@ void ResourceMgr::Load(const Path& resPath)
         if(!res->IsLoaded())
             res->BeginLoad();
     }
+}
+
+void ResourceMgr::Load(Resource& res)
+{
+    if(res.IsLoading() || res.IsLoaded())
+        return;
+
+    res.BeginLoad();
 }
 
 void ResourceMgr::LoadAsync(const std::vector<Path>& resPaths, OnResourcesLoaded cb)
@@ -46,7 +71,7 @@ void ResourceMgr::LoadAsync(const std::vector<Path>& resPaths, OnResourcesLoaded
             resources.emplace_back(found->second);
         }
     }
-    // Streamable Mgr Enqueue ... Calls Resource->BeginLoad(true);
+
     m_ResourceStreamer.EnqueueResources(resources, cb);
 }
 
@@ -112,7 +137,9 @@ void ResourceStreamer::Execute()
                     for(Resource* res : item.Resources)
                     {
                         // Blocking load
-                        res->BeginLoad(true);
+                        // Resource may be destroyed while we wait for loading
+                        if(res)
+                            res->BeginLoad(true);
                     }
 
                     if(item.Callback)
@@ -122,4 +149,66 @@ void ResourceStreamer::Execute()
 
         }
     }
+}
+
+void ResourceMgrRegistry::Register(const Resource::Type& type, ResourceMgr* mgr)
+{
+    ASSERT(m_ResourceMgrs.find(type) == m_ResourceMgrs.end(), "Resource Manager already registered for this type");
+    m_ResourceMgrs.emplace(type, mgr);
+}
+
+void ResourceMgrRegistry::Shutdown()
+{
+    auto it = m_ResourceMgrs.begin();
+    while(it != m_ResourceMgrs.end())
+    {
+        if(it->second)
+        {
+            delete (it->second);
+        }
+
+        m_ResourceMgrs.erase(it);
+        ++it;
+    }
+}
+
+ResourceMgr* ResourceMgrRegistry::GetMgr(const Resource::Type& type) const
+{
+    auto found = m_ResourceMgrs.find(type);
+    if(found != m_ResourceMgrs.end())
+    {
+        return found->second;
+    }
+
+    VCT_WARN("Resource manager for type '{0}' not found!", type.TypeId.ToStringRef());
+    return nullptr;
+}
+
+ResourceMgrRegistry& ResourceMgrRegistry::Get()
+{
+    static ResourceMgrRegistry self;
+    return self;
+}
+
+Resource* StaticLoadResource(const Resource::Type& type, const Path& path)
+{
+    ResourceMgr* mgr = ResourceMgrRegistry::Get().GetMgr(type);
+    ASSERT(mgr, "Cannot load resource, no associated resource manager");
+
+    Resource* res = mgr->GetResource(path);
+    if(res)
+    {
+        mgr->Load(*res);
+    }
+
+    return res;
+}
+
+Resource* StaticGetResource(const Resource::Type& type, const Path& path)
+{
+    ResourceMgr* mgr = ResourceMgrRegistry::Get().GetMgr(type);
+    ASSERT(mgr, "Cannot load resource, no associated resource manager");
+
+    Resource* res = mgr->GetResource(path);
+    return res;
 }

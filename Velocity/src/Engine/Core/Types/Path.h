@@ -42,7 +42,10 @@ public:
     bool IsDirectory() const;
     bool IsValid() const;
     StringId GetPathId() const { return m_PathId; }
+
 private:
+    friend std::ostream& operator << (std::ostream& os, const Path& path);
+
     /* Cleans up invalid tokens from path */
     void Sanitize(const char* path);
 private:
