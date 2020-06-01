@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Core/Types/Path.h"
+#include "Engine/IO/FileTypes.h"
 
 enum class ResourceState
 {
@@ -10,6 +11,11 @@ enum class ResourceState
     INVALID
 };
 
+/*  A Resource is an object that represents data that can be loaded or unloaded during runtime.
+*   Resources are categorized by their Resource::Type, which is used to assign them to a corresponding
+*   ResourceMgr for that type. A Type is given to a resource by using the RES_TYPE macro in the subclass
+*   public declaration.
+*/
 /* Resources are not acquired directly. Instead, client code uses ResourcePtr to represent assets */
 class Resource
 {
@@ -49,14 +55,8 @@ public:
     void IncrementRefCount();
     void DecrementRefCount();
 
-    /*  Called either explicitly for raw data or when file is finished reading from OnLoaded call 
-    *   Constructs the memory representation of the resource.
-    */
-    virtual bool Load(const void* const rawBinary, size_t bytes) = 0;
-    virtual void Unload() = 0;
     virtual Type GetResourceType() const = 0;
-
-    #define RES_TYPE(type) \
+    #define RES_TYPE(/*static Resource::Type*/ type) \
     virtual Type GetResourceType() const override { return type; } \
     static Type GetStaticType() { return type; }
 
@@ -67,6 +67,14 @@ public:
     FORCEINLINE bool        IsLoading() const { return m_ResState == ResourceState::LOADING; }
     FORCEINLINE ResourceState GetState() const { return m_ResState; }
 protected:
+    /*  Called either explicitly for raw data or when file is finished reading from OnLoaded call
+    *   Constructs the memory representation of the resource.
+    */
+    virtual bool Load(const void* const rawBinary, size_t bytes) = 0;
+    virtual void Unload() = 0;
+
+    void DoUnload();
+
     /*  Starts loading the resource from the file pointed to by m_ResPath 
     *   Resource loading is asynchronous, and the OnLoaded method is used
     *   as callback to post-process the read file.
@@ -81,6 +89,7 @@ private:
     Path m_ResPath;
     uint32_t m_RefCount;
     ResourceState m_ResState;
+    FileHandle m_LoadHandle;
 };
 
 namespace std {
@@ -93,6 +102,11 @@ namespace std {
     };
 }
 
+/*  A reference counted pointer to a live resource object. A resource pointer is valid if
+*   it points to a live, loaded resource. A resource can be explicitly loaded using the Load
+*   method if not already loaded. When no ResourcePtr points to a resource object, the reference
+*   count is 0, and the object is automatically unloaded.
+*/
 struct ResourcePtr
 {
     ResourcePtr();
@@ -118,6 +132,9 @@ struct ResourcePtr
     Resource* ResPtr;
 };
 
+/* Templated variant of ResourcePtr for type safety and convenience */
+// @TODO: This does not need to inherit ResourcePtr. Instead it contains a
+// ResourcePtr member and wraps around it.
 template <typename T>
 struct TResourcePtr : public ResourcePtr
 {

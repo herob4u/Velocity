@@ -334,9 +334,10 @@ bool FileMgr::Delete(const char* filepath)
     return (err == 0);
 }
 
-void FileMgr::Cancel(const FileHandle& handle)
+void FileMgr::Cancel(FileHandle& handle)
 {
     m_Task.Cancel(handle.Id);
+    handle.Invalidate();
 }
 
 FileMgr& FileMgr::Get()

@@ -47,8 +47,20 @@ void Resource::DecrementRefCount()
     if(m_RefCount == 0)
     {
         // Last reference to this resource instance has been released, unload it!
-        Unload();
+        if(IsLoading() && m_LoadHandle.IsValid())
+        {
+             FileMgr& mgr = FileMgr::Get();
+             mgr.Cancel(m_LoadHandle);
+        }
+
+        DoUnload();
     }
+}
+
+void Resource::DoUnload()
+{
+    Unload();
+    OnUnloaded();
 }
 
 void Resource::BeginLoad(bool bBlocking)
@@ -58,7 +70,7 @@ void Resource::BeginLoad(bool bBlocking)
     FileMgr& mgr = FileMgr::Get();
     if(!bBlocking)
     {
-        mgr.LoadAsync(m_ResPath, BIND_MFN_3(&Resource::OnLoaded, this));
+        m_LoadHandle = mgr.LoadAsync(m_ResPath, BIND_MFN_3(&Resource::OnLoaded, this));
     }
     else
     {
@@ -78,6 +90,8 @@ void Resource::BeginLoad(bool bBlocking)
 
 bool Resource::OnLoaded(bool success, const void* const data, size_t bytes)
 {
+    m_LoadHandle.Invalidate();
+
     if(!success)
     {
         m_ResState = ResourceState::INVALID;
@@ -114,12 +128,7 @@ ResourcePtr::ResourcePtr(const Path& path, const Resource::Type& type)
     , ResType(type)
     , ResPtr(nullptr)
 {
-    //ResPtr = StaticGetResource(type, path);
-    Resource* res = StaticGetResource(type, path);
-    if(res->IsLoaded())
-    {
-        ResPtr = res;
-    }
+    ResPtr = StaticGetResource(type, path);
 }
 
 ResourcePtr::ResourcePtr(Resource& Other)
@@ -196,7 +205,7 @@ ResourcePtr::~ResourcePtr()
 
 bool ResourcePtr::IsValid() const
 {
-    return !IsNull() && (ResPath.GetPathId() != StringId::NONE);
+    return !IsNull() && (ResPath.GetPathId() != StringId::NONE) && (ResPtr->IsLoaded());
 }
 
 bool ResourcePtr::IsNull() const

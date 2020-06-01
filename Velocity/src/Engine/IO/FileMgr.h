@@ -2,41 +2,8 @@
 
 #include "Engine/Core/Types/Path.h"
 #include "FileStream.h"
+#include "FileTypes.h"
 
-/* FileLoadedDelegate(bool success, void* data, size_t numBytes) */
-using FileLoadedDelegate = std::function<void(bool, void*, size_t)>;
-
-enum class FileError
-{
-    NONE = 0,
-    NO_READ_PERMISSION,
-    NO_WRITE_PERMISSION,
-    INCOMPLETE_WRITE,
-    FILE_EMPTY,
-    WRITEDATA_EMPTY,
-    INVALID_SWAP_TARGET,
-    FILE_NOT_FOUND,
-    IO_FAILED // generic error msg
-};
-
-struct FileHandle
-{
-public:
-    friend class FileMgr;
-
-    FileHandle(StringId id)
-        : Id(id)
-    {
-    }
-
-    FileHandle()
-        : Id(StringId::NONE)
-    {
-    }
-
-    bool IsValid() const { return Id != StringId::NONE; }
-    const StringId Id;
-};
 
 struct AsyncItem
 {
@@ -95,7 +62,7 @@ public:
 
     // Async Operations
     FileHandle LoadAsync(const Path& inputFilePath, FileLoadedDelegate onFileLoaded);
-    void Cancel(const FileHandle& handle);
+    void Cancel(FileHandle& handle);
 
     static FileMgr& Get();
 

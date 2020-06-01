@@ -20,7 +20,7 @@ Resource* ResourceMgr::GetResource(const Path& resPath)
     return res;
 }
 
-void ResourceMgr::Load(const Path& resPath)
+void ResourceMgr::Load(const Path& resPath, bool bLazyLoad)
 {
     auto found = m_ResourceList.find(resPath.GetPathId());
     if(found == m_ResourceList.end())
@@ -36,16 +36,16 @@ void ResourceMgr::Load(const Path& resPath)
         ASSERT(res, "An allocated resource can never be null");
         
         if(!res->IsLoaded())
-            res->BeginLoad();
+            res->BeginLoad(!bLazyLoad);
     }
 }
 
-void ResourceMgr::Load(Resource& res)
+void ResourceMgr::Load(Resource& res, bool bLazyLoad)
 {
     if(res.IsLoading() || res.IsLoaded())
         return;
 
-    res.BeginLoad();
+    res.BeginLoad(!bLazyLoad);
 }
 
 void ResourceMgr::LoadAsync(const std::vector<Path>& resPaths, OnResourcesLoaded cb)
@@ -85,7 +85,7 @@ void ResourceMgr::Unload(const Path& resPath)
         Resource* res = found->second;
         ASSERT(res, "An allocated resource can never be null");
 
-        res->Unload();
+        res->DoUnload();
     }
 }
 
@@ -198,7 +198,7 @@ Resource* StaticLoadResource(const Resource::Type& type, const Path& path)
     Resource* res = mgr->GetResource(path);
     if(res)
     {
-        mgr->Load(*res);
+        mgr->Load(*res, false);
     }
 
     return res;

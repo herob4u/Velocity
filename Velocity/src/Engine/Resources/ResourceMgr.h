@@ -40,8 +40,8 @@ protected:
 class ResourceMgr
 {
 public:
-    void Load(const Path& resPath);
-    void Load(Resource& res);
+    void Load(const Path& resPath, bool bLazyLoad = true);
+    void Load(Resource& res, bool bLazyLoad = true);
 
     // This may be unecessary, file loading is inherently async, post processing result may be very fast, and not warrant async operation
     void LoadAsync(const std::vector<Path>& resPaths, OnResourcesLoaded cb);
@@ -77,20 +77,3 @@ private:
 
 Resource* StaticLoadResource(const Resource::Type& type, const Path& path);
 Resource* StaticGetResource(const Resource::Type& type, const Path& path);
-/*
-template <typename T, typename MgrClass>
-class TResourceMgr : public ResourceMgr
-{
-public:
-    T* GetResource(const Path& resPath)
-    {
-        return dynamic_cast<T*>(ResourceMgr::GetResource(resPath));
-    }
-
-    static MgrClass& Get()
-    {
-        static MgrClass self;
-        return self;
-    }
-};
-*/

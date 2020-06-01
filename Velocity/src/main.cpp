@@ -32,7 +32,7 @@ public:
 
     virtual void Unload() override
     {
-
+        OnUnloaded();
     }
 
     RES_TYPE(TextResourceType)
@@ -117,25 +117,31 @@ int main(int argc, char** argv)
 
     // Register all resource managers by type
     ResourceMgrRegistry::Get().Register(TextResourceType, new TextResourceMgr());
-    ResourceMgr* textMgr = ResourceMgrRegistry::Get().GetMgr(TextResourceType);
-    {
-    TResourcePtr<TextResource> asset1(mgr.GetAbsPath("asset1.txt"));
-    if(asset1.Get() == nullptr)
-    {
-        TextResource* textRes = asset1.Load();
-    }
 
-    /*
-    for(int i = 0; i < 100; i++)
     {
-        textMgr.Load(mgr.GetAbsPath("asset1.txt"));
-        textMgr.Load(mgr.GetAbsPath("asset2.txt"));
-        textMgr.Load(mgr.GetAbsPath("asset3.txt"));
-        textMgr.Load(mgr.GetAbsPath("asset4.txt"));
-        textMgr.Load(mgr.GetAbsPath("asset5.txt"));
-    }
-    */
-    textMgr->Dump();
+        TResourcePtr<TextResource> asset1(mgr.GetAbsPath("asset1.txt"));
+        if(asset1.Get() == nullptr)
+        {
+            TextResource* textRes = asset1.Load();
+            while(textRes->IsLoading())
+            {
+            }
+        }
+        
+        TResourcePtr<TextResource> textRes2(asset1.Get());
+        TResourcePtr<TextResource> textRes3(mgr.GetAbsPath("asset2.txt"));
+
+        textRes3 = textRes2;
+        /*
+        for(int i = 0; i < 100; i++)
+        {
+            textMgr.Load(mgr.GetAbsPath("asset1.txt"));
+            textMgr.Load(mgr.GetAbsPath("asset2.txt"));
+            textMgr.Load(mgr.GetAbsPath("asset3.txt"));
+            textMgr.Load(mgr.GetAbsPath("asset4.txt"));
+            textMgr.Load(mgr.GetAbsPath("asset5.txt"));
+        }
+        */
     }
 
     Vct::Application app = Vct::Application();
