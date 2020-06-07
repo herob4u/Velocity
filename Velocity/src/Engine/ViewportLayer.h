@@ -5,6 +5,8 @@
 #include "Renderer/Camera.h"
 #include "Renderer/ShaderProgram.h"
 
+#include "Engine/Resources/Resource.h"
+
 namespace Vct
 {
     class ViewportLayer : public Layer
@@ -15,5 +17,9 @@ namespace Vct
         virtual void OnAttached() override;
         virtual void OnUpdate(float dt) override;
         virtual void OnDetached() override;
-    };
+
+    private:
+        TResourcePtr<class Texture> m_BackgroundTexture;
+        std::shared_ptr<ShaderProgram> m_TexturedQuadShader;
+    };    
 }

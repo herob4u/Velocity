@@ -55,7 +55,7 @@ protected:
     // @TODO: Instead of virtual methods, how about template specialization?
     virtual Resource* CreateResource(const Path& resPath) = 0;
     virtual void DestroyResource(Resource& res) = 0;
-    virtual short GetExtensionId(const std::string& extension) const = 0;
+    //virtual short GetExtensionId(const std::string& extension) const = 0;
 
 protected:
     typedef std::unordered_map<StringId, Resource*> ResourceList;
@@ -77,3 +77,4 @@ private:
 
 Resource* StaticLoadResource(const Resource::Type& type, const Path& path);
 Resource* StaticGetResource(const Resource::Type& type, const Path& path);
+Resource* StaticGetLoadedResource(const Resource::Type& type, const Path& path);

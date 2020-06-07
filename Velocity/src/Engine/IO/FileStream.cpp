@@ -11,7 +11,7 @@ InputFileStream::~InputFileStream()
 
 bool InputFileStream::Open(const char* filepath)
 {
-    auto err = fopen_s(&m_Handle, filepath, "r");
+    auto err = fopen_s(&m_Handle, filepath, "rb");
     
     if(err != 0)
     {
@@ -37,7 +37,9 @@ void InputFileStream::Close()
 bool InputFileStream::Read(void* data, size_t numBytes)
 {
     ASSERT(m_Handle, "No open file to read!");
-    return (fread(data, sizeof(uint8_t), numBytes, m_Handle) == numBytes);
+    //return (fread(data, sizeof(uint8_t), numBytes, m_Handle) == numBytes);
+    const size_t read = fread(data, sizeof(uint8_t), numBytes, m_Handle);
+    return (read == numBytes);
 }
 
 void* InputFileStream::Data() const

@@ -94,8 +94,9 @@ workspace "Velocity"
 		-- Assets Directory
 		currentDir = os.getcwd()
 		assetDir = currentDir.."/Assets/"
+		shaderDir = currentDir.."/Velocity/src/Engine/Renderer/Shaders/"
 		os.mkdir(assetDir)
-		defines {"ASSET_DIR=".."\""..assetDir.."\""}
+		defines {"ASSET_DIR=".."\""..assetDir.."\"", "SHADER_DIR=".."\""..shaderDir.."\""}
 
 		files
 		{

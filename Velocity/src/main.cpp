@@ -25,7 +25,7 @@ public:
             return false;
 
         std::string s = std::string((char*)rawBinary, bytes);
-        //VCT_INFO("Text Loaded: {0}", s);
+        VCT_INFO("Text Loaded: {0}", s);
         VCT_INFO("Loaded: {0}", GetPath());
         return true;
     }
@@ -90,7 +90,7 @@ protected:
         }
     }
 
-    short     GetExtensionId(const std::string& extension) const override
+    short     GetExtensionId(const std::string& extension) const
     {
         if(strcmp(extension.c_str(),"txt") == 0)  
             return TextFormats::TXT;
@@ -106,6 +106,10 @@ protected:
     }
 };
 
+#include "Engine/Renderer/Texture/TextureMgr.h"
+#include "Engine/Renderer/Texture/Texture.h"
+
+
 int main(int argc, char** argv)
 {
     Vct::Log::Init();
@@ -117,34 +121,13 @@ int main(int argc, char** argv)
 
     // Register all resource managers by type
     ResourceMgrRegistry::Get().Register(TextResourceType, new TextResourceMgr());
-
-    {
-        TResourcePtr<TextResource> asset1(mgr.GetAbsPath("asset1.txt"));
-        if(asset1.Get() == nullptr)
-        {
-            TextResource* textRes = asset1.Load();
-            while(textRes->IsLoading())
-            {
-            }
-        }
-        
-        TResourcePtr<TextResource> textRes2(asset1.Get());
-        TResourcePtr<TextResource> textRes3(mgr.GetAbsPath("asset2.txt"));
-
-        textRes3 = textRes2;
-        /*
-        for(int i = 0; i < 100; i++)
-        {
-            textMgr.Load(mgr.GetAbsPath("asset1.txt"));
-            textMgr.Load(mgr.GetAbsPath("asset2.txt"));
-            textMgr.Load(mgr.GetAbsPath("asset3.txt"));
-            textMgr.Load(mgr.GetAbsPath("asset4.txt"));
-            textMgr.Load(mgr.GetAbsPath("asset5.txt"));
-        }
-        */
-    }
+    ResourceMgrRegistry::Get().Register(ResType_Texture, new TextureMgr());
 
     Vct::Application app = Vct::Application();
+    {
+        TResourcePtr<Texture> testTexture(mgr.GetAbsPath("Pinup_A.tga"));
+        Texture* texture = testTexture.Load();
+    }
     app.PushLayer(new Vct::ViewportLayer());
     app.Run();
 }

@@ -11,7 +11,7 @@ PathError Path::GetExtension(const std::string& path, std::string& outExtension)
     {
         if(path[i] == '.')
         {
-            outExtension.assign(&path[i+1], path.size() - i);
+            outExtension.assign(&path[i+1], path.size() - (i+1));
             return PathError::NONE;
         }
     }

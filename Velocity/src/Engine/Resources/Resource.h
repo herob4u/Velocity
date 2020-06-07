@@ -138,6 +138,11 @@ struct ResourcePtr
 template <typename T>
 struct TResourcePtr : public ResourcePtr
 {
+    TResourcePtr()
+        : ResourcePtr()
+    {
+    }
+
     TResourcePtr(const Path& path)
         : ResourcePtr(path, T::GetStaticType())
     {
@@ -156,11 +161,13 @@ struct TResourcePtr : public ResourcePtr
     TResourcePtr& operator=(T& Other)
     {
         ResourcePtr::operator=(Other);
+        return *this;
     }
 
     TResourcePtr& operator=(T* Other)
     {
         ResourcePtr::operator=(Other);
+        return *this;
     }
 
     T* Load()

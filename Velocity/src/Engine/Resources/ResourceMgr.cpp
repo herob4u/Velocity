@@ -212,3 +212,18 @@ Resource* StaticGetResource(const Resource::Type& type, const Path& path)
     Resource* res = mgr->GetResource(path);
     return res;
 }
+
+Resource* StaticGetLoadedResource(const Resource::Type & type, const Path & path)
+{
+    ResourceMgr* mgr = ResourceMgrRegistry::Get().GetMgr(type);
+    ASSERT(mgr, "Cannot load resource, no associated resource manager");
+    
+    Resource* res = mgr->GetResource(path);
+    
+    if(res && !res->IsLoaded())
+    {
+        return nullptr;
+    }
+
+    return res;
+}

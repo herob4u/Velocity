@@ -9,6 +9,8 @@
 
 class ShaderProgram {
 public:
+    static std::string getShaderFile(const char* file);
+
     ShaderProgram();
 
     ~ShaderProgram();

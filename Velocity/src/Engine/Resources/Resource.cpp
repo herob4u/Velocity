@@ -128,7 +128,8 @@ ResourcePtr::ResourcePtr(const Path& path, const Resource::Type& type)
     , ResType(type)
     , ResPtr(nullptr)
 {
-    ResPtr = StaticGetResource(type, path);
+    //ResPtr = StaticGetResource(type, path);
+    ResPtr = StaticGetLoadedResource(type, path);
 }
 
 ResourcePtr::ResourcePtr(Resource& Other)
@@ -216,7 +217,7 @@ bool ResourcePtr::IsNull() const
 Resource* ResourcePtr::Load()
 {
     Resource* res = Get();
-    if(!res)
+    if(!res || (!res->IsLoaded()) )
     {
         // ResourceMgr Load
         res = StaticLoadResource(ResType, ResPath);
