@@ -117,7 +117,7 @@ void ResourceStreamer::EnqueueResources(const std::vector<Resource*>& resources,
 
 void ResourceStreamer::Execute()
 {
-    std::unique_lock<std::mutex> queueLock(m_queueMutex);
+    std::unique_lock<std::mutex> queueLock(m_queueMutex, std::defer_lock);
     while(1)
     {
         if(m_queue.size() > 0)

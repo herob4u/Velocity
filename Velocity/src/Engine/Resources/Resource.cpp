@@ -8,6 +8,8 @@ Resource::Resource(const std::string& resFile)
     , m_RefCount(0)
     , m_ResState(ResourceState::UNLOADED)
 {
+    FileMgr& mgr = FileMgr::Get();
+    m_AbsPath = mgr.GetAbsPath(m_ResPath);
 }
 
 Resource::Resource(const Path& resPath)
@@ -15,6 +17,8 @@ Resource::Resource(const Path& resPath)
     , m_RefCount(0)
     , m_ResState(ResourceState::UNLOADED)
 {
+    FileMgr& mgr = FileMgr::Get();
+    m_AbsPath = mgr.GetAbsPath(m_ResPath);
 }
 
 Resource::~Resource()

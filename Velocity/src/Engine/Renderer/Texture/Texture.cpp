@@ -3,6 +3,8 @@
 
 #include "Image.h"
 
+#include "Engine/Renderer/Renderer.h"
+
 #include "glad/glad.h"
 
 static const Path s_DefaultTexturePath("T_NullTexture.png");
@@ -82,7 +84,10 @@ void Texture::GLInit()
 {
     // 6408 for RGBA
     const int format = GetGLFormat(m_Image.get());
+    Vct::Renderer& renderer = Vct::Renderer::Get();
 
+    renderer.GenerateTexture(m_TextureId, m_Image->GetData(), m_Image->GetWidth(), m_Image->GetHeight(), format, GL_REPEAT);
+    /*
     glGenTextures(1, &m_TextureId);
     glBindTexture(GL_TEXTURE_2D, m_TextureId);
     glTexImage2D(GL_TEXTURE_2D, 0, format, m_Image->GetWidth(), m_Image->GetHeight(), 0, format, GL_UNSIGNED_BYTE, m_Image->GetData());
@@ -92,6 +97,7 @@ void Texture::GLInit()
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    */
 }
 
 bool Texture::Load(const void* const rawBinary, size_t bytes)
@@ -106,7 +112,11 @@ bool Texture::Load(const void* const rawBinary, size_t bytes)
 
 void Texture::Unload()
 {
-    glDeleteTextures(1, &m_TextureId);
+    //glDeleteTextures(1, &m_TextureId);
+    Vct::Renderer& renderer = Vct::Renderer::Get();
+
+    renderer.DeleteTexture(m_TextureId);
+
     m_Image->Release();
     m_Image.release();
 }

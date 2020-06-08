@@ -49,6 +49,12 @@ public:
 
     Resource* GetResource(const Path& resPath);
 
+    template <typename T>
+    T* GetResource(const Path& resPath)
+    {
+        return dynamic_cast<T*>(GetResource(resPath));
+    }
+
     void Dump() const;
 protected:
     // These are called internally to handle the allocation and destruction of resources.

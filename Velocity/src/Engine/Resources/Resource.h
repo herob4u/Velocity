@@ -61,7 +61,8 @@ public:
     static Type GetStaticType() { return type; }
 
     FORCEINLINE bool        operator==(const Resource& Other) const { return m_ResPath == Other.m_ResPath; }
-    FORCEINLINE const Path& GetPath() const { return m_ResPath; }
+    FORCEINLINE const Path& GetPath() const { return m_AbsPath; }
+    FORCEINLINE const Path& GetRelativePath() const { return m_ResPath; }
     FORCEINLINE uint32_t    GetRefCount() const { return m_RefCount; }
     FORCEINLINE bool        IsLoaded() const { return m_ResState == ResourceState::LOADED; }
     FORCEINLINE bool        IsLoading() const { return m_ResState == ResourceState::LOADING; }
@@ -87,6 +88,7 @@ protected:
 
 private:
     Path m_ResPath;
+    Path m_AbsPath;
     uint32_t m_RefCount;
     ResourceState m_ResState;
     FileHandle m_LoadHandle;
