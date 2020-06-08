@@ -68,6 +68,10 @@ protected:
     uint16_t Instance;
 private:
 
+#ifdef VCT_DEBUG
+    std::string m_DebugString;
+#endif // VCT_DEBUG
+
 };
 
 #include "Engine/Utils/HashCombine.h"

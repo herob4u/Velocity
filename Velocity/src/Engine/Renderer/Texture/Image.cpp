@@ -146,7 +146,7 @@ void Image::LoadTGA(const void* const buffer, size_t numBytes)
     //VCT_INFO(header.ToString());
     stbi_set_flip_vertically_on_load(1);
     const PixelBuffer imgBuffer = (PixelBuffer)const_cast<void*>(buffer);
-    m_Data = stbi_load_from_memory(imgBuffer, numBytes, &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
+    m_Data = stbi_load_from_memory(imgBuffer, static_cast<int>(numBytes), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
     VCT_INFO("TGA Image Data at address: {0}", (void*)m_Data);
 }
 

@@ -14,7 +14,7 @@ ViewportLayer::ViewportLayer()
 {
     FileMgr& fileMgr = FileMgr::Get();
     ResourceMgr* texMgr = ResourceMgrRegistry::Get().GetMgr(Texture::GetStaticType());
-    m_BackgroundTexture = texMgr->GetResource<Texture>(fileMgr.GetAbsPath("Pinup_A.tga"));
+    m_BackgroundTexture = texMgr->GetResource<Texture>("Pinup_A.tga");
 
     ASSERT(m_BackgroundTexture.Get(), "Null texture!");
 

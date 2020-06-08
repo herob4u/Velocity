@@ -123,18 +123,30 @@ StringId::StringId(const std::string& str)
 {
     StringIdTable& idTable = GetStringIdTable();
     idTable.Add(str.c_str(), Id, Instance);
+
+#ifdef VCT_DEBUG
+    m_DebugString = str;
+#endif // VCT_DEBUG
+
 }
 
 StringId::StringId(const char* str)
 {
     StringIdTable& table = GetStringIdTable();
     table.Add(str, Id, Instance);
+
+#ifdef VCT_DEBUG
+    m_DebugString = str;
+#endif // VCT_DEBUG
 }
 
 StringId::StringId(const StringId& Other)
     : Id(Other.Id)
     , Instance(Other.Instance)
 {
+#ifdef VCT_DEBUG
+    m_DebugString = Other.m_DebugString;
+#endif // VCT_DEBUG
 }
 
 StringId StringId::Concat(const StringId& lhs, const StringId& rhs)

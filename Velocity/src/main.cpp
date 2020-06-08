@@ -125,8 +125,13 @@ int main(int argc, char** argv)
 
     Vct::Application app = Vct::Application();
     {
+        // This should fail!
         TResourcePtr<Texture> testTexture(mgr.GetAbsPath("Pinup_A.tga"));
+        VCT_INFO(mgr.GetAbsPath("Pinup_A.tga").GetFullPathRef());
         Texture* texture = testTexture.Load();
+
+        TResourcePtr<TextResource> asset1("asset1.txt");
+        asset1.Load();
     }
     app.PushLayer(new Vct::ViewportLayer());
     app.Run();

@@ -69,20 +69,21 @@ void Resource::DoUnload()
 
 void Resource::BeginLoad(bool bBlocking)
 {
-    m_ResState = ResourceState::LOADING;
-
     FileMgr& mgr = FileMgr::Get();
     if(!bBlocking)
     {
-        m_LoadHandle = mgr.LoadAsync(m_ResPath, BIND_MFN_3(&Resource::OnLoaded, this));
+        m_ResState = ResourceState::LOADING;
+        m_LoadHandle = mgr.LoadAsync(m_AbsPath, BIND_MFN_3(&Resource::OnLoaded, this));
     }
     else
     {
         InputFileStream file;
-        file.Open(m_ResPath);
+        file.Open(m_AbsPath);
 
         if(file)
         {
+            m_ResState = ResourceState::LOADING;
+
             void* data = nullptr;
             size_t bytes = 0;
             bool success = mgr.LoadSync(file, &data, bytes);
@@ -137,7 +138,7 @@ ResourcePtr::ResourcePtr(const Path& path, const Resource::Type& type)
 }
 
 ResourcePtr::ResourcePtr(Resource& Other)
-    : ResPath (Other.GetPath())
+    : ResPath (Other.GetRelativePath())
     , ResType (Other.GetResourceType())
     , ResPtr(&Other)
 {
@@ -149,7 +150,7 @@ ResourcePtr::ResourcePtr(Resource* Other)
 {
     if(Other)
     {
-        ResPath = Other->GetPath();
+        ResPath = Other->GetRelativePath();
         ResType = Other->GetResourceType();
         ResPtr->IncrementRefCount();
     }
@@ -168,7 +169,7 @@ ResourcePtr& ResourcePtr::operator=(Resource& Other)
     }
 
     // Acquire new resource
-    ResPath = Other.GetPath();
+    ResPath = Other.GetRelativePath();
     ResType = Other.GetResourceType();
     ResPtr  = &Other;
     
@@ -188,7 +189,7 @@ ResourcePtr& ResourcePtr::operator=(Resource* Other)
 
     if(ResPtr)
     {
-        ResPath = Other->GetPath();
+        ResPath = Other->GetRelativePath();
         ResType = Other->GetResourceType();
         ResPtr->IncrementRefCount();
     }
@@ -225,10 +226,11 @@ Resource* ResourcePtr::Load()
     {
         // ResourceMgr Load
         res = StaticLoadResource(ResType, ResPath);
-        ResPtr = res;
     }
 
-    return res;
+    ResPtr = res->IsLoaded() ? res : nullptr;
+
+    return ResPtr;
 }
 
 Resource* ResourcePtr::Get() const
