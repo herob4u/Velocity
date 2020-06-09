@@ -117,6 +117,5 @@ void Texture::Unload()
 
     renderer.DeleteTexture(m_TextureId);
 
-    m_Image->Release();
     m_Image.release();
 }

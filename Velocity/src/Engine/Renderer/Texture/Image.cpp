@@ -97,6 +97,11 @@ void Image::Release()
     {
         stbi_image_free(m_Data);
         m_Data = nullptr;
+
+        m_Width = 0;
+        m_Height = 0;
+        m_Channels = 0;
+        m_Format = ImageFormat::UNKNOWN;
     }
 }
 
@@ -152,14 +157,26 @@ void Image::LoadTGA(const void* const buffer, size_t numBytes)
 
 void Image::LoadPNG(const void* const buffer, size_t numBytes)
 {
+    stbi_set_flip_vertically_on_load(1);
+    const PixelBuffer imgBuffer = (PixelBuffer)const_cast<void*>(buffer);
+    m_Data = stbi_load_from_memory(imgBuffer, static_cast<int>(numBytes), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
+    VCT_INFO("PNG Image Data at address: {0}", (void*)m_Data);
 }
 
 void Image::LoadBMP(const void* const buffer, size_t numBytes)
 {
+    stbi_set_flip_vertically_on_load(1);
+    const PixelBuffer imgBuffer = (PixelBuffer)const_cast<void*>(buffer);
+    m_Data = stbi_load_from_memory(imgBuffer, static_cast<int>(numBytes), &m_Width, &m_Height, &m_Channels, STBI_rgb);
+    VCT_INFO("BMP Image Data at address: {0}", (void*)m_Data);
 }
 
 void Image::LoadJPG(const void* const buffer, size_t numBytes)
 {
+    stbi_set_flip_vertically_on_load(1);
+    const PixelBuffer imgBuffer = (PixelBuffer)const_cast<void*>(buffer);
+    m_Data = stbi_load_from_memory(imgBuffer, static_cast<int>(numBytes), &m_Width, &m_Height, &m_Channels, STBI_rgb);
+    VCT_INFO("JPG Image Data at address: {0}", (void*)m_Data);
 }
 
 void Image::CalculateDepth()

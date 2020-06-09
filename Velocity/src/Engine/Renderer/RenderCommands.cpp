@@ -175,6 +175,7 @@ void GenTexturesCmd::Execute()
 
     glGenTextures(1, &m_TexId);
     glBindTexture(GL_TEXTURE_2D, m_TexId);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
     glTexImage2D(GL_TEXTURE_2D, 0, m_Format, m_Width, m_Height, 0, m_Format, GL_UNSIGNED_BYTE, m_Data);
     glGenerateMipmap(GL_TEXTURE_2D);
 

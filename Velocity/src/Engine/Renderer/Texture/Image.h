@@ -24,8 +24,6 @@ public:
     Image(const void* const sourceBuffer, size_t numBytes, ImageFormat asFormat);
     ~Image();
 
-    void Release();
-
     FORCEINLINE int GetWidth() const { return m_Width; }
     FORCEINLINE int GetHeight() const { return m_Height; }
     FORCEINLINE int GetNumChannels() const { return m_Channels; }
@@ -40,6 +38,7 @@ protected:
     void LoadJPG(const void* const buffer, size_t numBytes);
 
 private:
+    void Release();
     void CalculateDepth();
 
     PixelBuffer m_Data;
