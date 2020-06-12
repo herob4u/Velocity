@@ -2,19 +2,19 @@
 
 #include "Mesh.h"
 
+#include "Engine/Resources/Resource.h"
+
 #include <vector>
 
 namespace Vct
 {
-    class Resource;
-
     /* A Model is an aggregate of meshes decomposed by materials. This exist to 
     *  describe meshes with multiple materials using a material id system.
     */
-    class Model
+    class Model : public Resource
     {
     public:
-        static Model* Import(const std::string& modelRes);
+        static Model* Import(const char* filepath);
         void SetMaterial(uint8_t materialId);
     private:
         /* TODO: Must be resources */

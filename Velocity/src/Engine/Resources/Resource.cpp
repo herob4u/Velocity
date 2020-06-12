@@ -6,6 +6,7 @@
 Resource::Resource(const std::string& resFile)
     : m_ResPath(resFile.c_str())
     , m_RefCount(0)
+    , m_DependencyCount(0)
     , m_ResState(ResourceState::UNLOADED)
 {
     FileMgr& mgr = FileMgr::Get();
@@ -15,6 +16,7 @@ Resource::Resource(const std::string& resFile)
 Resource::Resource(const Path& resPath)
     : m_ResPath(resPath)
     , m_RefCount(0)
+    , m_DependencyCount(0)
     , m_ResState(ResourceState::UNLOADED)
 {
     FileMgr& mgr = FileMgr::Get();
@@ -90,6 +92,40 @@ void Resource::BeginLoad(bool bBlocking)
 
             OnLoaded(success, data, bytes);
         }
+    }
+}
+
+void Resource::NotifyDependencyLoad(Resource* dependency)
+{
+    if(dependency)
+    {
+        dependency->m_DependencyCount++;
+        if(!dependency->IsLoaded() && !dependency->IsLoading())
+        {
+            dependency->BeginLoad();
+        }
+    }
+}
+
+void Resource::NotifyDependencyUnload(Resource* dependency)
+{
+    if(dependency)
+    {
+        dependency->m_DependencyCount--;
+        if(dependency->m_DependencyCount == 0)
+        {
+            dependency->DoUnload();
+        }
+    }
+}
+
+void Resource::OnModified()
+{
+    if(m_ResState == ResourceState::LOADED)
+    {
+    }
+    else if(m_ResState == ResourceState::UNLOADED)
+    {
     }
 }
 

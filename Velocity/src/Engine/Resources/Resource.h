@@ -82,7 +82,12 @@ protected:
     */
     void BeginLoad(bool bBlocking = false);
 
-    virtual void OnModified() {}
+    /* Called when the resource is modified to update dependencies */
+    virtual void UpdateDependencies() {}
+    void NotifyDependencyLoad(Resource* dependency);
+    void NotifyDependencyUnload(Resource* dependency);
+
+    virtual void OnModified();
     virtual bool OnLoaded(bool success, const void* const data, size_t bytes);
     virtual void OnUnloaded();
 
@@ -90,6 +95,7 @@ private:
     Path m_ResPath;
     Path m_AbsPath;
     uint32_t m_RefCount;
+    uint32_t m_DependencyCount;
     ResourceState m_ResState;
     FileHandle m_LoadHandle;
 };

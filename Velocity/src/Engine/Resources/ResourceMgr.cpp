@@ -28,14 +28,14 @@ void ResourceMgr::Load(const Path& resPath, bool bLazyLoad)
         Resource* res = CreateResource(resPath);
         ASSERT(res, "Failed to instantiate resource from '{0}'", resPath.GetFullPathRef());
         m_ResourceList.emplace(resPath.GetPathId(), res);
-        res->BeginLoad();
+        res->BeginLoad(!bLazyLoad);
     }
     else
     {
         Resource* res = found->second;
         ASSERT(res, "An allocated resource can never be null");
         
-        if(!res->IsLoaded())
+        if(!res->IsLoaded() && !res->IsLoading())
             res->BeginLoad(!bLazyLoad);
     }
 }
