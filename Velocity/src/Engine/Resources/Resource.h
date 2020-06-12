@@ -22,6 +22,7 @@ class Resource
 public:
     friend class ResourceMgr;
     friend struct ResourceStreamer;
+    friend struct ResourceLoader;
 
     /* Usage: Each resource sub-class define */
     struct Type

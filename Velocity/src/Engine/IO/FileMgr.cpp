@@ -72,7 +72,7 @@ void FileMgr::FileIOTask::Execute()
                         }
                         
                         m_FileStream.Close();
-                        free(data);
+                        free(data); // @ TODO: Relegate cleanup to user code. Use void* instead of const void* const
                     }
                 }
             }

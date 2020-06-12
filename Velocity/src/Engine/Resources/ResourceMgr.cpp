@@ -151,6 +151,52 @@ void ResourceStreamer::Execute()
     }
 }
 
+ResourceLoader::ResourceLoader()
+{
+    m_workThread = std::thread(&ResourceLoader::Execute, this);
+}
+
+void ResourceLoader::EnqueueResource(Resource* resource, void* data, size_t bytes, bool success)
+{
+    std::unique_lock<std::mutex> m_queueLock(m_queueMutex);
+    m_queue.emplace_back(resource, data, bytes, success);
+}
+
+void ResourceLoader::Finish()
+{
+    while(m_queue.size() > 0)
+    { /* Do nothing - BLOCK */ }
+}
+
+void ResourceLoader::Execute()
+{
+    std::unique_lock<std::mutex> queueLock(m_queueMutex, std::defer_lock);
+    while(1)
+    {
+        if(m_queue.size() > 0)
+        {
+            if(queueLock.try_lock())
+            {
+                if(m_queue.size() > 0)
+                {
+                    // CRITICAL
+                    AsyncItem item = m_queue.front();
+                    m_queue.pop_front();
+                    // END CRITICAL
+
+                    queueLock.unlock();
+
+                    // Process Item
+                    ASSERT(item.InResource, "Attempting to Load null resource");
+                    item.InResource->OnLoaded(item.bSuccess, item.Data, item.NumBytes);
+                }
+            }
+
+        }
+    }
+}
+
+
 void ResourceMgrRegistry::Register(const Resource::Type& type, ResourceMgr* mgr)
 {
     ASSERT(m_ResourceMgrs.find(type) == m_ResourceMgrs.end(), "Resource Manager already registered for this type");

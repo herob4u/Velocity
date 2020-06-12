@@ -30,6 +30,37 @@ protected:
     std::mutex m_queueMutex;
 };
 
+/* The resource loader is responsible for loading a single batch of stream requests */
+struct ResourceLoader
+{
+    struct AsyncItem
+    {
+        AsyncItem(Resource* resource, void* data, size_t bytes, bool success)
+            : InResource(resource)
+            , Data(data)
+            , NumBytes(bytes)
+            , bSuccess(success)
+        {
+        }
+
+        Resource* InResource;
+        void* Data;
+        size_t NumBytes;
+        bool bSuccess;
+    };
+
+    ResourceLoader();
+    void EnqueueResource(Resource* resource, void* data, size_t bytes, bool success);
+    void Finish();
+
+protected:
+    void Execute();
+
+    std::list<AsyncItem> m_queue;
+    std::thread m_workThread;
+    std::mutex m_queueMutex;
+};
+
 /*  The Resource Manager facilitates the loading, unloading, and reference counting 
 *   of abstract resource types. Resource Managers are further template specialized to deal with
 *   specific categories of resources.
