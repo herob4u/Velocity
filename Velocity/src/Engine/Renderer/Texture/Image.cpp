@@ -64,7 +64,7 @@ Image::Image(const Path& filePath)
     CalculateDepth();
 }
 
-Image::Image(const void* const sourceBuffer, size_t numBytes, ImageFormat asFormat)
+Image::Image(const void* sourceBuffer, size_t numBytes, ImageFormat asFormat)
 {
     switch(asFormat)
     {
@@ -136,7 +136,7 @@ struct TGAHeader
 };
 #pragma pack()
 
-void Image::LoadTGA(const void* const buffer, size_t numBytes)
+void Image::LoadTGA(const void* buffer, size_t numBytes)
 {
     // Create an InputMemoryStream!
     //InputMemoryStream ibuffer(buffer, numBytes);
@@ -150,31 +150,31 @@ void Image::LoadTGA(const void* const buffer, size_t numBytes)
     // ...
     //VCT_INFO(header.ToString());
     stbi_set_flip_vertically_on_load(1);
-    const PixelBuffer imgBuffer = (PixelBuffer)const_cast<void*>(buffer);
+    const PixelBuffer imgBuffer = (const PixelBuffer)(buffer);
     m_Data = stbi_load_from_memory(imgBuffer, static_cast<int>(numBytes), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
     VCT_INFO("TGA Image Data at address: {0}", (void*)m_Data);
 }
 
-void Image::LoadPNG(const void* const buffer, size_t numBytes)
+void Image::LoadPNG(const void* buffer, size_t numBytes)
 {
     stbi_set_flip_vertically_on_load(1);
-    const PixelBuffer imgBuffer = (PixelBuffer)const_cast<void*>(buffer);
+    const PixelBuffer imgBuffer = (const PixelBuffer)(buffer);
     m_Data = stbi_load_from_memory(imgBuffer, static_cast<int>(numBytes), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
     VCT_INFO("PNG Image Data at address: {0}", (void*)m_Data);
 }
 
-void Image::LoadBMP(const void* const buffer, size_t numBytes)
+void Image::LoadBMP(const void* buffer, size_t numBytes)
 {
     stbi_set_flip_vertically_on_load(1);
-    const PixelBuffer imgBuffer = (PixelBuffer)const_cast<void*>(buffer);
+    const PixelBuffer imgBuffer = (const PixelBuffer)(buffer);
     m_Data = stbi_load_from_memory(imgBuffer, static_cast<int>(numBytes), &m_Width, &m_Height, &m_Channels, STBI_rgb);
     VCT_INFO("BMP Image Data at address: {0}", (void*)m_Data);
 }
 
-void Image::LoadJPG(const void* const buffer, size_t numBytes)
+void Image::LoadJPG(const void* buffer, size_t numBytes)
 {
     stbi_set_flip_vertically_on_load(1);
-    const PixelBuffer imgBuffer = (PixelBuffer)const_cast<void*>(buffer);
+    const PixelBuffer imgBuffer = (const PixelBuffer)(buffer);
     m_Data = stbi_load_from_memory(imgBuffer, static_cast<int>(numBytes), &m_Width, &m_Height, &m_Channels, STBI_rgb);
     VCT_INFO("JPG Image Data at address: {0}", (void*)m_Data);
 }

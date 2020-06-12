@@ -3,6 +3,11 @@
 
 #include "Engine/IO/FileMgr.h"
 
+ResourceMgr::ResourceMgr()
+    : m_ResourceStreamer(m_ResourceLoader)
+{
+}
+
 Resource* ResourceMgr::GetResource(const Path& resPath)
 {
     auto found = m_ResourceList.find(resPath.GetPathId());
@@ -50,7 +55,6 @@ void ResourceMgr::Load(Resource& res, bool bLazyLoad)
 
 void ResourceMgr::LoadAsync(const std::vector<Path>& resPaths, OnResourcesLoaded cb)
 {
-    FileMgr& mgr = FileMgr::Get();
     std::vector<Resource*> resources;
     resources.reserve(resPaths.size());
 
@@ -101,7 +105,8 @@ void ResourceMgr::Dump() const
     }
 }
 
-ResourceStreamer::ResourceStreamer()
+ResourceStreamer::ResourceStreamer(ResourceLoader& resourceLoader)
+    : m_resourceLoader(resourceLoader)
 {
     m_workThread = std::thread(&ResourceStreamer::Execute, this);
 }
@@ -117,6 +122,8 @@ void ResourceStreamer::EnqueueResources(const std::vector<Resource*>& resources,
 
 void ResourceStreamer::Execute()
 {
+    FileMgr& fileMgr = FileMgr::Get();
+
     std::unique_lock<std::mutex> queueLock(m_queueMutex, std::defer_lock);
     while(1)
     {
@@ -138,9 +145,21 @@ void ResourceStreamer::Execute()
                     {
                         // Blocking load
                         // Resource may be destroyed while we wait for loading
-                        if(res)
-                            res->BeginLoad(true);
+                        //if(res)
+                            //res->BeginLoad(true);
+
+                        //@TODO: Might be better for resource loader to recieve a corresponding vector of data and size
+                        // Allows for independent batching operations
+                        fileMgr.LoadAsync(res->GetPath(), [=](bool success, void* data, size_t bytes)
+                        {
+                            m_resourceLoader.EnqueueResource(res, data, bytes, success);
+                        });
                     }
+
+                    // Blocking - waits for batched resources to be loaded
+                    // @TODO: Might not be needed? Consider race condition for resource
+                    // that gets streamed in succession before being fully loaded
+                    m_resourceLoader.Finish();
 
                     if(item.Callback)
                         item.Callback(item.Resources);
@@ -189,6 +208,8 @@ void ResourceLoader::Execute()
                     // Process Item
                     ASSERT(item.InResource, "Attempting to Load null resource");
                     item.InResource->OnLoaded(item.bSuccess, item.Data, item.NumBytes);
+
+                    //free(item.Data);
                 }
             }
 

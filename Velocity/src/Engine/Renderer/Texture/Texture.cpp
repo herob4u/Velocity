@@ -100,7 +100,7 @@ void Texture::GLInit()
     */
 }
 
-bool Texture::Load(const void* const rawBinary, size_t bytes)
+bool Texture::Load(const void* rawBinary, size_t bytes)
 {
     ImageFormat format = Image::GetImageFormat(GetPath());
     m_Image.reset(new Image(rawBinary, bytes, format));

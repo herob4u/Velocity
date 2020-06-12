@@ -21,7 +21,7 @@ public:
 
     Image(const std::string& filePath);
     Image(const Path& filePath);
-    Image(const void* const sourceBuffer, size_t numBytes, ImageFormat asFormat);
+    Image(const void* sourceBuffer, size_t numBytes, ImageFormat asFormat);
     ~Image();
 
     FORCEINLINE int GetWidth() const { return m_Width; }
@@ -32,10 +32,10 @@ public:
     FORCEINLINE ImageFormat GetFormat() const { return m_Format; }
 
 protected:
-    void LoadTGA(const void* const buffer, size_t numBytes);
-    void LoadPNG(const void* const buffer, size_t numBytes);
-    void LoadBMP(const void* const buffer, size_t numBytes);
-    void LoadJPG(const void* const buffer, size_t numBytes);
+    void LoadTGA(const void* buffer, size_t numBytes);
+    void LoadPNG(const void* buffer, size_t numBytes);
+    void LoadBMP(const void* buffer, size_t numBytes);
+    void LoadJPG(const void* buffer, size_t numBytes);
 
 private:
     void Release();

@@ -34,7 +34,7 @@ protected:
     void GLInit();
 
     // Resource Interface
-    virtual bool Load(const void* const rawBinary, size_t bytes) override;
+    virtual bool Load(const void* rawBinary, size_t bytes) override;
     virtual void Unload() override;
 
 private:

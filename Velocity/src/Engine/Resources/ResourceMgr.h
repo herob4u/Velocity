@@ -19,7 +19,7 @@ struct ResourceStreamer
         OnResourcesLoaded Callback;
     };
 
-    ResourceStreamer();
+    ResourceStreamer(ResourceLoader& resourceLoader);
     void EnqueueResources(const std::vector<Resource*>& resources, OnResourcesLoaded cb);
 
 protected:
@@ -28,6 +28,7 @@ protected:
     std::list<AsyncItem> m_queue;
     std::thread m_workThread;
     std::mutex m_queueMutex;
+    ResourceLoader& m_resourceLoader;
 };
 
 /* The resource loader is responsible for loading a single batch of stream requests */
@@ -71,6 +72,9 @@ protected:
 class ResourceMgr
 {
 public:
+    ResourceMgr();
+    virtual ~ResourceMgr() {}
+
     void Load(const Path& resPath, bool bLazyLoad = true);
     void Load(Resource& res, bool bLazyLoad = true);
 
@@ -97,7 +101,10 @@ protected:
 protected:
     typedef std::unordered_map<StringId, Resource*> ResourceList;
     ResourceList m_ResourceList;
+    
+    // These need to be static! Only 1 streamer and loader in the scope of the engine
     ResourceStreamer m_ResourceStreamer;
+    ResourceLoader m_ResourceLoader;
 };
 
 class ResourceMgrRegistry

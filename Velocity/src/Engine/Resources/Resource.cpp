@@ -129,23 +129,26 @@ void Resource::OnModified()
     }
 }
 
-bool Resource::OnLoaded(bool success, const void* const data, size_t bytes)
+bool Resource::OnLoaded(bool success, void* data, size_t bytes)
 {
     m_LoadHandle.Invalidate();
 
     if(!success)
     {
         m_ResState = ResourceState::INVALID;
+        free(data);
         return false;
     }
 
     if(Load(data, bytes))
     {
         m_ResState = ResourceState::LOADED;
+        free(data);
         return true;
     }
 
     m_ResState = ResourceState::INVALID;
+    free(data);
     return false;
 }
 

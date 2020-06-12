@@ -23,9 +23,6 @@ namespace Vct
         uint32_t NumVertices;
         uint16_t NumTriangles;
     private:
-        /* Triangle list mapping a Material Id to a range of triangles */
-        std::vector<TriangleList> m_TriList;
-
         unsigned int m_vbo, m_ibo, m_vao;
     };
 

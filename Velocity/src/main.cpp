@@ -19,7 +19,7 @@ public:
     TextResource(const std::string& resFile) : Resource(resFile) {}
     TextResource(const Path& resPath) : Resource(resPath) {}
 
-    virtual bool Load(const void* const rawBinary, size_t bytes) override
+    virtual bool Load(const void* rawBinary, size_t bytes) override
     {
         if(!rawBinary || bytes == 0)
             return false;

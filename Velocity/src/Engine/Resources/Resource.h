@@ -72,7 +72,7 @@ protected:
     /*  Called either explicitly for raw data or when file is finished reading from OnLoaded call
     *   Constructs the memory representation of the resource.
     */
-    virtual bool Load(const void* const rawBinary, size_t bytes) = 0;
+    virtual bool Load(const void* rawBinary, size_t bytes) = 0;
     virtual void Unload() = 0;
 
     void DoUnload();
@@ -89,7 +89,7 @@ protected:
     void NotifyDependencyUnload(Resource* dependency);
 
     virtual void OnModified();
-    virtual bool OnLoaded(bool success, const void* const data, size_t bytes);
+    virtual bool OnLoaded(bool success, void* data, size_t bytes);
     virtual void OnUnloaded();
 
 private:
