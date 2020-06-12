@@ -3,8 +3,10 @@
 
 #include "Engine/IO/FileMgr.h"
 
+ResourceLoader ResourceMgr::m_ResourceLoader;
+ResourceStreamer ResourceMgr::m_ResourceStreamer(ResourceMgr::m_ResourceLoader);
+
 ResourceMgr::ResourceMgr()
-    : m_ResourceStreamer(m_ResourceLoader)
 {
 }
 
@@ -113,9 +115,6 @@ ResourceStreamer::ResourceStreamer(ResourceLoader& resourceLoader)
 
 void ResourceStreamer::EnqueueResources(const std::vector<Resource*>& resources, OnResourcesLoaded cb)
 {
-    // @TODO: Which is faster - emplacing within a critical section, or constructing the object, entering the critical section, and pushing the item?
-    // Latter seems to do AT LEAST twice the work of emplacing. So in effect, we will do the same amount of work in the critical section.
-    // Pick the former.
     std::unique_lock<std::mutex> queueLock(m_queueMutex);
     m_queue.emplace_back(resources, cb);
 }
@@ -147,6 +146,9 @@ void ResourceStreamer::Execute()
                         // Resource may be destroyed while we wait for loading
                         //if(res)
                             //res->BeginLoad(true);
+
+                        if(res->IsLoaded() || res->IsLoading())
+                            continue;
 
                         //@TODO: Might be better for resource loader to recieve a corresponding vector of data and size
                         // Allows for independent batching operations
@@ -208,8 +210,6 @@ void ResourceLoader::Execute()
                     // Process Item
                     ASSERT(item.InResource, "Attempting to Load null resource");
                     item.InResource->OnLoaded(item.bSuccess, item.Data, item.NumBytes);
-
-                    //free(item.Data);
                 }
             }
 

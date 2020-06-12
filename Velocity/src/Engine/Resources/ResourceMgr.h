@@ -5,6 +5,10 @@
 
 using OnResourcesLoaded = std::function<void(const std::vector<Resource*>&)>;
 
+/*  The ResourceStreamer accepts a list of assets to batch stream and load from disk 
+*   Loading is deferred to the ResourceLoader to synchronize the loading of dependencies
+*   while avoiding race conditions when modifying resource internal states.
+*/
 struct ResourceStreamer
 {
     struct AsyncItem
@@ -63,10 +67,11 @@ protected:
 };
 
 /*  The Resource Manager facilitates the loading, unloading, and reference counting 
-*   of abstract resource types. Resource Managers are further template specialized to deal with
-*   specific categories of resources.
+*   of abstract resource types. Resource Managers are further specialized to deal with
+*   certain categories of resource by a corresponding Resource::Type.
 *
-*   Resources are created using a static factory method, see Resource.h
+*   Resources are created by a specialized implementation of an associated ResourceMgr.
+*   See ResourceMgr::CreateResource and ResourceMgr::DestroyResource
 */
 
 class ResourceMgr
@@ -96,15 +101,14 @@ protected:
     // @TODO: Instead of virtual methods, how about template specialization?
     virtual Resource* CreateResource(const Path& resPath) = 0;
     virtual void DestroyResource(Resource& res) = 0;
-    //virtual short GetExtensionId(const std::string& extension) const = 0;
 
 protected:
     typedef std::unordered_map<StringId, Resource*> ResourceList;
     ResourceList m_ResourceList;
     
     // These need to be static! Only 1 streamer and loader in the scope of the engine
-    ResourceStreamer m_ResourceStreamer;
-    ResourceLoader m_ResourceLoader;
+    static ResourceStreamer m_ResourceStreamer;
+    static ResourceLoader m_ResourceLoader;
 };
 
 class ResourceMgrRegistry

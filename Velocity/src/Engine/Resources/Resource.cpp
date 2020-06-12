@@ -102,7 +102,8 @@ void Resource::NotifyDependencyLoad(Resource* dependency)
         dependency->m_DependencyCount++;
         if(!dependency->IsLoaded() && !dependency->IsLoading())
         {
-            dependency->BeginLoad();
+            // Blocking because this will be called from a separate thread. Synchronize dependency loading with root locally.
+            dependency->BeginLoad(true);
         }
     }
 }
