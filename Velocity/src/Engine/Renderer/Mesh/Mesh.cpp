@@ -33,37 +33,33 @@ static GLenum GLType(ShaderDataType type)
     }
 }
 
-Mesh::Mesh(const std::vector<MeshVertex>& vertices, const std::vector<Triangle>& indices)
+Mesh::Mesh(uint32_t numVertices, uint16_t numTriangles)
+    : NumVertices(numVertices)
+    , NumTriangles(numTriangles)
 {
-    GenerateTriangleList(indices);
-    InitBuffers(vertices, indices);
-
-    BufferLayout layout = MeshVertex::GetLayout();
-    SetBufferLayout(layout);
 }
 
-
-void Mesh::GenerateTriangleList(const std::vector<Triangle>& tris)
+void Mesh::InitBuffers(const void* vertexData, size_t size, const std::vector<Triangle>& triangles)
 {
-    unsigned short currMatId = 0;
-    m_TriList[currMatId].Offset = 0;
+    glGenVertexArrays(1, &m_vao);
+    glBindVertexArray(m_vao);
 
-    for(int i = 0; i < tris.size(); i++)
-    {
-        const Triangle& tri = tris[i];
+    // Interleaved Vertex Buffer
+    glGenBuffers(1, &m_vbo);
+    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+    glBufferData(GL_ARRAY_BUFFER, size, vertexData, GL_STATIC_DRAW);
 
-        if(tri.MaterialId != currMatId)
-        {
-            currMatId = tri.MaterialId;
-            ASSERT(m_TriList[currMatId].Count == 0, "Disconnected sequence of triangles");
-            m_TriList[currMatId].Offset = 3*i;
-        }
+    // Index Buffer
+    glGenBuffers(1, &m_ibo);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 3 * triangles.size(), triangles.data(), GL_STATIC_DRAW);
 
-        ++m_TriList[currMatId].Count;
-    }
+    glBindBuffer(GL_ARRAY_BUFFER, 0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
+    glBindVertexArray(0);
 }
 
-void Mesh::SetBufferLayout(const BufferLayout & layout)
+void Mesh::SetBufferLayout(const BufferLayout& layout)
 {
     glBindVertexArray(m_vao);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
@@ -80,22 +76,29 @@ void Mesh::SetBufferLayout(const BufferLayout & layout)
     glBindVertexArray(0);
 }
 
-void Mesh::InitBuffers(const std::vector<MeshVertex>& vertices, const std::vector<Triangle>& triangles)
+SkeletalMesh::SkeletalMesh(const std::vector<SkinnedVertex>& vertices, const std::vector<Triangle>& indices)
+    : Mesh(vertices.size(), indices.size())
 {
-    glGenVertexArrays(1, &m_vao);
-    glBindVertexArray(m_vao);
+    InitBuffers(vertices.data(), sizeof(SkinnedVertex) * vertices.size(), indices);
 
-    // Interleaved Vertex Buffer
-    glGenBuffers(1, &m_vbo);
-    glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-    glBufferData(GL_ARRAY_BUFFER, sizeof(MeshVertex) * vertices.size(), vertices.data(), GL_STATIC_DRAW);
+    BufferLayout& bufferLayout = SkinnedVertex::GetLayout();
+    SetBufferLayout(bufferLayout);
+}
 
-    // Index Buffer
-    glGenBuffers(1, &m_ibo);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 3 * triangles.size(), triangles.data(), GL_STATIC_DRAW);
+StaticMesh::StaticMesh(const std::vector<MeshVertex>& vertices, const std::vector<Triangle>& indices)
+    : Mesh(vertices.size(), indices.size())
+{
+    InitBuffers(vertices.data(), sizeof(MeshVertex) * vertices.size(), indices);
 
-    glBindBuffer(GL_ARRAY_BUFFER, 0);
-    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+    BufferLayout& bufferLayout = MeshVertex::GetLayout();
+    SetBufferLayout(bufferLayout);
+}
+
+SkyboxMesh::SkyboxMesh(const std::vector<SkyboxVertex>& vertices, const std::vector<Triangle>& indices)
+    : Mesh(vertices.size(), indices.size())
+{
+    InitBuffers(vertices.data(), sizeof(SkyboxVertex) * vertices.size(), indices);
+
+    BufferLayout& bufferLayout = SkyboxVertex::GetLayout();
+    SetBufferLayout(bufferLayout);
 }

@@ -19,6 +19,6 @@ namespace Vct
     private:
         /* TODO: Must be resources */
         std::vector<Mesh> m_Meshes;
-        std::vector<Material*> m_Materials;
+        std::vector<TResourcePtr<Material>> m_Materials;
     };
 }

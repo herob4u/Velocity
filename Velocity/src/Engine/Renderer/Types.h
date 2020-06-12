@@ -151,12 +151,13 @@ namespace Vct
         glm::vec3 Color;
         glm::vec2 UV;
 
-        static BufferLayout GetLayout()
+        static BufferLayout& GetLayout()
         {
-            return BufferLayout{{ShaderDataType::Float3, "a_Position"}, 
-                                {ShaderDataType::Float3, "a_Normal"}, 
-                                {ShaderDataType::Float3, "a_Color"}, 
-                                {ShaderDataType::Float2, "a_UV"}};
+            static BufferLayout layout {{ ShaderDataType::Float3, "a_Position" }, 
+                                        { ShaderDataType::Float3, "a_Normal" }, 
+                                        { ShaderDataType::Float3, "a_Color" }, 
+                                        { ShaderDataType::Float2, "a_UV" }};
+            return layout;
         }
     } ColoredVertex;
 
@@ -167,11 +168,13 @@ namespace Vct
         glm::vec3 Normal;
         glm::vec2 UV;
 
-        static BufferLayout GetLayout()
+        static BufferLayout& GetLayout()
         {
-            return BufferLayout{{ ShaderDataType::Float3, "a_Position" },
-                                { ShaderDataType::Float3, "a_Normal" },
-                                { ShaderDataType::Float2, "a_UV" } };
+            static BufferLayout layout {{ ShaderDataType::Float3, "a_Position" },
+                                        { ShaderDataType::Float3, "a_Normal" },
+                                        { ShaderDataType::Float2, "a_UV" } };
+
+            return layout;
         }
     } MeshVertex;
 
@@ -181,10 +184,12 @@ namespace Vct
         glm::vec3 Position;
         glm::vec3 UVW;
 
-        static BufferLayout GetLayout()
+        static BufferLayout& GetLayout()
         {
-            return BufferLayout{{ ShaderDataType::Float3, "a_Position" },
-                                { ShaderDataType::Float3, "a_UVW" } };
+            static BufferLayout layout {{ ShaderDataType::Float3, "a_Position" },
+                                        { ShaderDataType::Float3, "a_UVW" } };
+
+            return layout;
         }
     } SkyboxVertex;
 
@@ -197,13 +202,15 @@ namespace Vct
         glm::ivec4 BoneIndices;
         glm::vec4 BoneWeights;
 
-        static BufferLayout GetLayout()
+        static BufferLayout& GetLayout()
         {
-            return BufferLayout{{ ShaderDataType::Float3, "a_Position" },
-                                { ShaderDataType::Float3, "a_Normal" },
-                                { ShaderDataType::Float2, "a_UV" },
-                                { ShaderDataType::Int4, "a_BoneIndices"},
-                                { ShaderDataType::Float4, "a_BoneWeights"} };
+            static BufferLayout layout {{ ShaderDataType::Float3, "a_Position" },
+                                        { ShaderDataType::Float3, "a_Normal" },
+                                        { ShaderDataType::Float2, "a_UV" },
+                                        { ShaderDataType::Int4, "a_BoneIndices"},
+                                        { ShaderDataType::Float4, "a_BoneWeights"} };
+
+            return layout;
         }
     } SkinnedVertex;
 

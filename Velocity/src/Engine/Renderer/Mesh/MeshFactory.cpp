@@ -157,7 +157,7 @@ Mesh* MeshFactory::MakeBox(float length, float width, float height)
     indices.emplace_back(0, 1, 5);
     indices.emplace_back(5, 4, 0);
 
-    return new Mesh(vertices, indices);
+    return new StaticMesh(vertices, indices);
 }
 
 // @TODO: This is using the Z-axis being up as a convention. Change for Y up for consistency
@@ -244,7 +244,7 @@ Mesh* MeshFactory::MakeSphere(float radius, int segments)
         }
     }
 
-    return new Mesh(vertices, indices);
+    return new StaticMesh(vertices, indices);
 }
 
 Mesh* MeshFactory::MakePlane(float width, float length)
@@ -310,5 +310,5 @@ Mesh* MeshFactory::MakePlane(float width, float length)
     indices.emplace_back(0, 1, 2);
     indices.emplace_back(1, 3, 2);
 
-    return new Mesh(vertices, indices);
+    return new StaticMesh(vertices, indices);
 }
