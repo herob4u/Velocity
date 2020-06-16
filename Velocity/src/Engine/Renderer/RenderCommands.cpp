@@ -157,12 +157,13 @@ void RenderCmdQueue::TryProcessNext()
     }
 }
 
-GenTexturesCmd::GenTexturesCmd(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t wrapMode)
+GenTexturesCmd::GenTexturesCmd(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode)
     : m_TexId(texId)
     , m_Data(data)
     , m_Width(width)
     , m_Height(height)
     , m_Format(format)
+    , m_Type(type)
     , m_WrapMode(wrapMode)
 {
 }
@@ -176,7 +177,7 @@ void GenTexturesCmd::Execute()
     glGenTextures(1, &m_TexId);
     glBindTexture(GL_TEXTURE_2D, m_TexId);
     glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
-    glTexImage2D(GL_TEXTURE_2D, 0, m_Format, m_Width, m_Height, 0, m_Format, GL_UNSIGNED_BYTE, m_Data);
+    glTexImage2D(GL_TEXTURE_2D, 0, m_Format, m_Width, m_Height, 0, m_Format, m_Type, m_Data);
     glGenerateMipmap(GL_TEXTURE_2D);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, m_WrapMode);

@@ -52,7 +52,7 @@ namespace Vct
     struct GenTexturesCmd final : public RenderCmd
     {
     public:
-        GenTexturesCmd(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t wrapMode);
+        GenTexturesCmd(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode);
         virtual void Execute() override;
         virtual std::string GetDebugName() const { return std::string("GenTextureCmd"); }
 
@@ -62,6 +62,7 @@ namespace Vct
         uint16_t m_Width;
         uint16_t m_Height;
         uint16_t m_Format;
+        uint16_t m_Type;
         uint16_t m_WrapMode;
     };
 

@@ -3,6 +3,8 @@
 #include "ShaderException.h"
 //#include "GlErrorCheck.hpp"
 
+#include "Engine/IO/MemoryStream.h"
+
 #include "glad/glad.h"
 
 #include <glm/gtc/type_ptr.hpp>
@@ -284,4 +286,15 @@ int ShaderProgram::getAttribLocation (
 
     return result;
 }
+
+//------------------------------------------------------------------------------------
+ bool ShaderProgram::Load(const void* rawBinary, size_t bytes)
+ {
+    std::string source((const char*)rawBinary, bytes);
+    return true;
+ }
+
+ void ShaderProgram::Unload()
+ {
+ }
 

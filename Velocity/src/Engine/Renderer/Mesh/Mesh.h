@@ -10,9 +10,13 @@ namespace Vct
     class Mesh
     {
     public:
+        static void ComputeTangents(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3,
+                                    const glm::vec2& uv1,
+                                    const glm::vec2& uv2,
+                                    const glm::vec2& uv3,
+                                    glm::vec3& outTangent, glm::vec3& outBiTangent);
+
         Mesh(uint32_t numVertices, uint16_t numTriangles);
-        //Mesh(const std::vector<MeshVertex>& vertices, const std::vector<Triangle>& indices);
-        //Mesh(const std::vector<SkinnedVertex>& vertices, const std::vector<Triangle>& indices);
 
         FORCEINLINE uint32_t GetNumVertices() const  { return NumVertices; }
         FORCEINLINE uint16_t GetNumTriangles() const { return NumTriangles; }

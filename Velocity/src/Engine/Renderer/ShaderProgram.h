@@ -3,11 +3,12 @@
  */
 
 #pragma once
-
+#include "Engine/Resources/Resource.h"
 #include <string>
 
+static Resource::Type ResType_Shader("shader");
 
-class ShaderProgram {
+class ShaderProgram : public Resource {
 public:
     static std::string getShaderFile(const char* file);
 
@@ -33,10 +34,15 @@ public:
 
     unsigned int getProgramObject() const;
 
-    int getUniformLocation(const char * uniformName) const;
+    int getUniformLocation(const char* uniformName) const;
 
-    int getAttribLocation(const char * attributeName) const;
+    int getAttribLocation(const char* attributeName) const;
 
+    RES_TYPE(ResType_Shader);
+protected:
+    /* Resource Interface */
+    virtual bool Load(const void* rawBinary, size_t bytes) override;
+    virtual void Unload() override;
 
 private:
     struct Shader {

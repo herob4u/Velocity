@@ -7,6 +7,8 @@
 #include "Engine/Renderer/Texture/TextureMgr.h"
 #include "Engine/IO/FileMgr.h"
 
+#include "Engine/Renderer/Mesh/Model.h"
+
 using namespace Vct;
 
 ViewportLayer::ViewportLayer()
@@ -15,6 +17,11 @@ ViewportLayer::ViewportLayer()
     FileMgr& fileMgr = FileMgr::Get();
     ResourceMgr* texMgr = ResourceMgrRegistry::Get().GetMgr(Texture::GetStaticType());
     m_BackgroundTexture = texMgr->GetResource<Texture>("beardipped.bmp");
+    m_Model = Path("asset2.txt");
+    m_Model.Load();
+
+    m_Model2 = Path("asset3.txt");
+    m_Model2.Load();
 
     ASSERT(m_BackgroundTexture.Get(), "Null texture!");
 

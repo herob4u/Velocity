@@ -65,8 +65,13 @@ void Resource::DecrementRefCount()
 
 void Resource::DoUnload()
 {
-    Unload();
-    OnUnloaded();
+    --m_DependencyCount;
+
+    if(m_DependencyCount == 0)
+    {
+        Unload();
+        OnUnloaded();
+    }
 }
 
 void Resource::BeginLoad(bool bBlocking)
@@ -95,67 +100,38 @@ void Resource::BeginLoad(bool bBlocking)
     }
 }
 
-void Resource::NotifyDependencyLoad(Resource* dependency)
-{
-    if(dependency)
-    {
-        dependency->m_DependencyCount++;
-        if(!dependency->IsLoaded() && !dependency->IsLoading())
-        {
-            // Blocking because this will be called from a separate thread. Synchronize dependency loading with root locally.
-            dependency->BeginLoad(true);
-        }
-    }
-}
-
-void Resource::NotifyDependencyUnload(Resource* dependency)
-{
-    if(dependency)
-    {
-        dependency->m_DependencyCount--;
-        if(dependency->m_DependencyCount == 0)
-        {
-            dependency->DoUnload();
-        }
-    }
-}
-
 void Resource::OnModified()
 {
-    if(m_ResState == ResourceState::LOADED)
-    {
-    }
-    else if(m_ResState == ResourceState::UNLOADED)
-    {
-    }
 }
 
 bool Resource::OnLoaded(bool success, void* data, size_t bytes)
 {
     m_LoadHandle.Invalidate();
 
-    if(!success)
-    {
-        m_ResState = ResourceState::INVALID;
-        free(data);
-        return false;
-    }
+    bool result = false;
 
-    if(Load(data, bytes))
+    if(success && Load(data, bytes))
     {
         m_ResState = ResourceState::LOADED;
-        free(data);
-        return true;
+        ++m_DependencyCount;
+        result = true;
+    }
+    else
+    {
+        m_ResState = ResourceState::INVALID;
+        result = false;
     }
 
-    m_ResState = ResourceState::INVALID;
+    UpdateDependencies();
+
     free(data);
-    return false;
+    return result;
 }
 
 void Resource::OnUnloaded()
 {
     m_ResState = ResourceState::UNLOADED;
+    UpdateDependencies();
 }
 
 /*===========================================================

@@ -1,5 +1,6 @@
 #include "glm/trigonometric.hpp"
 
+/* Yaw is -90 in order to face forward. Otherwise, 0 would begin in the Right direction */
 FORCEINLINE Rotator::Rotator()
     : Pitch(0.f)
     , Yaw(-90.f)

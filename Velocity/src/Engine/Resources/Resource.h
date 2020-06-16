@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Engine/Core/Core.h"
 #include "Engine/Core/Types/Path.h"
 #include "Engine/IO/FileTypes.h"
 
@@ -85,8 +86,6 @@ protected:
 
     /* Called when the resource is modified to update dependencies */
     virtual void UpdateDependencies() {}
-    void NotifyDependencyLoad(Resource* dependency);
-    void NotifyDependencyUnload(Resource* dependency);
 
     virtual void OnModified();
     virtual bool OnLoaded(bool success, void* data, size_t bytes);

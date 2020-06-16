@@ -48,10 +48,12 @@ namespace Vct
 
         void SetPosition(const glm::vec3& pos);
         void Offset(const glm::vec3& offset);
+        void SetRotation(const Rotator& rotation);
         void AddRotation(const Rotator& rotation);
         void LookAt(const glm::vec3 target);
 
         const glm::mat4& GetViewProjection() const { return m_ViewProjection; }
+        const glm::mat4& GetView() const { return m_View; }
     protected:
         void RecomputeProjection();
         void RecomputeView();

@@ -108,7 +108,7 @@ protected:
 
 #include "Engine/Renderer/Texture/TextureMgr.h"
 #include "Engine/Renderer/Texture/Texture.h"
-
+#include "Engine/Renderer/Mesh/Model.h"
 
 int main(int argc, char** argv)
 {
@@ -122,6 +122,7 @@ int main(int argc, char** argv)
     // Register all resource managers by type
     ResourceMgrRegistry::Get().Register(TextResourceType, new TextResourceMgr());
     ResourceMgrRegistry::Get().Register(ResType_Texture, new TextureMgr());
+    ResourceMgrRegistry::Get().Register(ResType_Model, new Vct::ModelMgr());
 
     Vct::Application app = Vct::Application();
     {

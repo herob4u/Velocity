@@ -107,6 +107,28 @@ void ResourceMgr::Dump() const
     }
 }
 
+void ResourceMgr::DestroyResource(Resource & res)
+{
+    if(res.IsLoaded())
+    {
+        Unload(res.GetPath());
+    }
+
+    ASSERT(res.GetRefCount() == 0, "Resource still in use!");
+    auto found = m_ResourceList.find(res.GetPath().GetPathId());
+    if(found != m_ResourceList.end())
+    {
+        Resource* res = found->second;
+        if(res)
+        {
+            delete res;
+            res = nullptr;
+        }
+
+        m_ResourceList.erase(found);
+    }
+}
+
 ResourceStreamer::ResourceStreamer(ResourceLoader& resourceLoader)
     : m_resourceLoader(resourceLoader)
 {
@@ -148,7 +170,10 @@ void ResourceStreamer::Execute()
                             //res->BeginLoad(true);
 
                         if(res->IsLoaded() || res->IsLoading())
+                        {
+                            res->m_DependencyCount++;
                             continue;
+                        }
 
                         //@TODO: Might be better for resource loader to recieve a corresponding vector of data and size
                         // Allows for independent batching operations

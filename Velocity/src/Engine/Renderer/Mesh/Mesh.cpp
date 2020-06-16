@@ -33,6 +33,31 @@ static GLenum GLType(ShaderDataType type)
     }
 }
 
+void Mesh::ComputeTangents( const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3, 
+                            const glm::vec2& uv1, 
+                            const glm::vec2& uv2, 
+                            const glm::vec2& uv3,
+                            glm::vec3& outTangent, glm::vec3& outBiTangent)
+{
+    const glm::vec3 e1 = p2 - p1;
+    const glm::vec3 e2 = p3 - p2;
+
+    const float du1 = uv2.x - uv1.x;
+    const float dv1 = uv2.y - uv1.y;
+    const float du2 = uv3.x - uv1.x;
+    const float dv2 = uv3.y - uv1.y;
+
+    const float det_inv = 1/(du1*dv2 - du2*dv1);
+
+    outTangent.x = det_inv * (dv2 * e1.x - dv1 * e2.x);
+    outTangent.y = det_inv * (dv2 * e1.y - dv1 * e2.y);
+    outTangent.z = det_inv * (dv2 * e1.z - dv1 * e2.z);
+
+    outBiTangent.x = det_inv * (-du2 * e1.x + du1* e2.x);
+    outBiTangent.y = det_inv * (-du2 * e1.y + du1* e2.y);
+    outBiTangent.z = det_inv * (-du2 * e1.z + du1* e2.z);
+}
+
 Mesh::Mesh(uint32_t numVertices, uint16_t numTriangles)
     : NumVertices(numVertices)
     , NumTriangles(numTriangles)
@@ -79,6 +104,7 @@ void Mesh::SetBufferLayout(const BufferLayout& layout)
 SkeletalMesh::SkeletalMesh(const std::vector<SkinnedVertex>& vertices, const std::vector<Triangle>& indices)
     : Mesh(vertices.size(), indices.size())
 {
+
     InitBuffers(vertices.data(), sizeof(SkinnedVertex) * vertices.size(), indices);
 
     BufferLayout& bufferLayout = SkinnedVertex::GetLayout();

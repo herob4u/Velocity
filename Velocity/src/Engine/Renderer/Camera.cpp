@@ -73,6 +73,12 @@ void Camera::Offset(const glm::vec3& offset)
     RecomputeView();
 }
 
+void Camera::SetRotation(const Rotator& rotation)
+{
+    m_Rotation = rotation;
+    RecomputeView();
+}
+
 void Camera::AddRotation(const Rotator& rotation)
 {
     m_Rotation += rotation;

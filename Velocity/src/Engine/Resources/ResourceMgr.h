@@ -100,7 +100,7 @@ protected:
     // These are called internally to handle the allocation and destruction of resources.
     // @TODO: Instead of virtual methods, how about template specialization?
     virtual Resource* CreateResource(const Path& resPath) = 0;
-    virtual void DestroyResource(Resource& res) = 0;
+    virtual void DestroyResource(Resource& res);
 
 protected:
     typedef std::unordered_map<StringId, Resource*> ResourceList;

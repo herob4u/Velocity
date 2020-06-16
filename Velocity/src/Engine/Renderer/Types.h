@@ -167,12 +167,16 @@ namespace Vct
         glm::vec3 Position;
         glm::vec3 Normal;
         glm::vec2 UV;
+        glm::vec3 Tangent;
+        glm::vec3 BiTangent;
 
         static BufferLayout& GetLayout()
         {
             static BufferLayout layout {{ ShaderDataType::Float3, "a_Position" },
                                         { ShaderDataType::Float3, "a_Normal" },
-                                        { ShaderDataType::Float2, "a_UV" } };
+                                        { ShaderDataType::Float2, "a_UV" },
+                                        { ShaderDataType::Float3, "a_Tangent"},
+                                        { ShaderDataType::Float3, "a_BiTangent"} };
 
             return layout;
         }
@@ -199,6 +203,8 @@ namespace Vct
         glm::vec3 Position;
         glm::vec3 Normal;
         glm::vec2 UV;
+        glm::vec3 Tangent;
+        glm::vec3 BiTangent;
         glm::ivec4 BoneIndices;
         glm::vec4 BoneWeights;
 
@@ -207,6 +213,8 @@ namespace Vct
             static BufferLayout layout {{ ShaderDataType::Float3, "a_Position" },
                                         { ShaderDataType::Float3, "a_Normal" },
                                         { ShaderDataType::Float2, "a_UV" },
+                                        { ShaderDataType::Float3, "a_Tangent" },
+                                        { ShaderDataType::Float3, "a_BiTangent" },
                                         { ShaderDataType::Int4, "a_BoneIndices"},
                                         { ShaderDataType::Float4, "a_BoneWeights"} };
 
