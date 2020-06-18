@@ -20,8 +20,8 @@ namespace Vct
 
     private:
         TResourcePtr<class Texture> m_BackgroundTexture;
-        TResourcePtr<class Model> m_Model;
-        TResourcePtr<Model> m_Model2;
         std::shared_ptr<ShaderProgram> m_TexturedQuadShader;
+        class Framebuffer* m_ScreenshotBuffer;
+        Camera m_Camera;
     };    
 }

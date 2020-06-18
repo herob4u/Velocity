@@ -17,6 +17,9 @@ namespace Vct
 
         // Main loop of application
         void Run();
+
+        static const Application& Get() { return *s_Instance; }
+        const Window& GetWindow() const { return *m_Window; }
     protected:
 
         void OnEvent(Event& e);
@@ -26,6 +29,7 @@ namespace Vct
         bool OnWindowMaximized(WindowMaximizedEvent& e);
         bool OnWindowClosed(WindowClosedEvent& e);
     private:
+        static Application* s_Instance;
         std::unique_ptr<Window> m_Window;
         LayerStack m_LayerStack;
         bool bIsRunning;

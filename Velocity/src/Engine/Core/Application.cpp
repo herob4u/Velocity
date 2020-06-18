@@ -7,6 +7,8 @@
 
 using namespace Vct;
 
+Application* Application::s_Instance = nullptr;
+
 class ExampleLayer : public Layer
 {
 public:
@@ -21,6 +23,12 @@ public:
 Application::Application()
     : bIsRunning(true)
 {
+    ASSERT(!s_Instance, "One instance of application is already running.");
+    if(!s_Instance)
+    {
+        s_Instance = this;
+    }
+
     m_Window = std::unique_ptr<Window>(new Window(1280, 720, "Velocity"));
     m_Window->SetEventCallback(BIND_FN(&Application::OnEvent));
     //m_Window->launch(0, nullptr, m_Window.get(), 1280, 720, "Velocity", 60);

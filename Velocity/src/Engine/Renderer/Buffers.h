@@ -1,12 +1,12 @@
 #pragma once
 
-class Texture;
 namespace Vct
 {
     /***********************************************************************/
     /*                          OPENGL BUFFERS                             */    
     /***********************************************************************/
 
+    class Texture;
     struct FramebufferParams
     {
         uint16_t Width  = 256;
@@ -26,16 +26,18 @@ namespace Vct
             DEPTH_STENCIL
         };
 
-        Framebuffer* CreateColorBuffer(uint8_t attachmentSlot, const FramebufferParams& fbParams);
-        Framebuffer* CreateDepthBuffer(const FramebufferParams& fbParams);
-        Framebuffer* CreateStencilBuffer(const FramebufferParams& fbParams);
-        Framebuffer* CreateDepthStencilBuffer(const FramebufferParams& fbParams);
+        static Framebuffer* CreateColorBuffer(uint8_t attachmentSlot, const FramebufferParams& fbParams);
+        static Framebuffer* CreateDepthBuffer(const FramebufferParams& fbParams);
+        static Framebuffer* CreateStencilBuffer(const FramebufferParams& fbParams);
+        static Framebuffer* CreateDepthStencilBuffer(const FramebufferParams& fbParams);
 
         ~Framebuffer();
 
         FORCEINLINE uint16_t GetWidth() const   { return m_Params.Width; }
         FORCEINLINE uint16_t GetHeight() const  { return m_Params.Height; }
-        FORCEINLINE uint8_t  GetAttachmentSlot() const { return m_AttachmentSlot; }
+        FORCEINLINE uint8_t  GetAttachmentSlot() const  { return m_AttachmentSlot; }
+        FORCEINLINE uint32_t GetRendererId() const      { return m_BufferId; }
+        FORCEINLINE Texture* GetTextureTarget() const   { return m_Texture; }
 
         void Rebuild();
         void Destroy();

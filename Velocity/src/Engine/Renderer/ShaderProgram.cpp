@@ -35,7 +35,8 @@ std::string ShaderProgram::getShaderFile(const char* file)
 ShaderProgram::ShaderProgram()
         : programObject(0),
           prevProgramObject(0),
-          activeProgram(0)
+          activeProgram(0),
+          Resource(Path("nullshader"))
 {
 
 }

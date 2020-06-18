@@ -124,6 +124,7 @@ bool Resource::OnLoaded(bool success, void* data, size_t bytes)
 
     UpdateDependencies();
 
+    // This is a problem. Async calls will be processing data after free is called.
     free(data);
     return result;
 }

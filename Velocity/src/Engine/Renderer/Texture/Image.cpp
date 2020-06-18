@@ -14,7 +14,9 @@ static std::string FORMAT_TGA = "tga";
 static std::string FORMAT_BMP = "bmp";
 static std::string FORMAT_JPEG = "jpeg";
 static std::string FORMAT_JPG = "jpg";
+static std::string FORMAT_HDR = "hdr";
 
+using namespace Vct;
 
 ImageFormat Image::GetImageFormat(const std::string& filepath)
 {
@@ -27,6 +29,7 @@ ImageFormat Image::GetImageFormat(const std::string& filepath)
     else if(String::Equals(ext, FORMAT_BMP, false)) { return ImageFormat::BMP; }
     else if(String::Equals(ext, FORMAT_JPEG, false)) { return ImageFormat::JPG; }
     else if(String::Equals(ext, FORMAT_JPG, false)) { return ImageFormat::JPG; }
+    else if(String::Equals(ext, FORMAT_HDR, false)) { return ImageFormat::HDR; }
 
     return ImageFormat::UNKNOWN;
 }
@@ -42,29 +45,59 @@ ImageFormat Image::GetImageFormat(const Path& filepath)
     else if(String::Equals(ext, FORMAT_BMP, false)) { return ImageFormat::BMP; }
     else if(String::Equals(ext, FORMAT_JPEG, false)) { return ImageFormat::JPG; }
     else if(String::Equals(ext, FORMAT_JPG, false)) { return ImageFormat::JPG; }
+    else if(String::Equals(ext, FORMAT_HDR, false)) { return ImageFormat::HDR; }
 
     return ImageFormat::UNKNOWN;
 }
 
+Image* Image::Acquire(int width, int height, void* sourceBuffer)
+{
+    Image* img = new Image();
+    img->m_Data = (PixelBuffer)sourceBuffer;
+    img->m_Width = width;
+    img->m_Height = height;
+
+    return img;
+}
+
 Image::Image(const std::string& filePath)
+    : m_Data(nullptr)
+    , m_Width(-1)
+    , m_Height(-1)
+    , m_Channels(0)
+    , m_Depth(0)
+    , m_Format(ImageFormat::UNKNOWN)
 {
     m_Format = GetImageFormat(filePath);
 
     stbi_set_flip_vertically_on_load(1);
-    stbi_load(filePath.c_str(), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
+    m_Data = stbi_load(filePath.c_str(), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
     CalculateDepth();
 }
 
 Image::Image(const Path& filePath)
+    : m_Data(nullptr)
+    , m_Width(-1)
+    , m_Height(-1)
+    , m_Channels(0)
+    , m_Depth(0)
+    , m_Format(ImageFormat::UNKNOWN)
 {
     m_Format = GetImageFormat(filePath);
 
     stbi_set_flip_vertically_on_load(1);
-    stbi_load(filePath.GetFullPathRef(), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
+    m_Data = stbi_load(filePath.GetFullPathRef(), &m_Width, &m_Height, &m_Channels, STBI_rgb_alpha);
     CalculateDepth();
 }
 
 Image::Image(const void* sourceBuffer, size_t numBytes, ImageFormat asFormat)
+    : m_Data(nullptr)
+    , m_Width(-1)
+    , m_Height(-1)
+    , m_Channels(0)
+    , m_Depth(0)
+    , m_Format(asFormat)
+
 {
     switch(asFormat)
     {
@@ -83,7 +116,58 @@ Image::Image(const void* sourceBuffer, size_t numBytes, ImageFormat asFormat)
         case ImageFormat::JPG:
             LoadJPG(sourceBuffer, numBytes);
         break;
+
+        case ImageFormat::HDR:
+            LoadHDR(sourceBuffer, numBytes);
+        break;
+
+        case ImageFormat::RAW:
+            LoadRAW(sourceBuffer, numBytes);
+        break;
+
+        default: ASSERT(false, "Invalid Image format");
     }
+
+    CalculateDepth();
+}
+
+void Image::Write(const std::string& filepath) const
+{
+    ImageFormat outputFormat = GetImageFormat(filepath);
+    switch(outputFormat)
+    {
+        case ImageFormat::TGA:
+            stbi_write_tga(filepath.c_str(), m_Width, m_Height, m_Channels, m_Data);
+        break;
+
+        case ImageFormat::PNG:
+            stbi_write_png(filepath.c_str(), m_Width, m_Height, m_Channels, m_Data, 4);
+        break;
+
+        case ImageFormat::BMP:
+            stbi_write_bmp(filepath.c_str(), m_Width, m_Height, m_Channels, m_Data);
+        break;
+
+        case ImageFormat::JPG:
+            stbi_write_jpg(filepath.c_str(), m_Width, m_Height, m_Channels, m_Data, 100);
+        break;
+
+        case ImageFormat::HDR:
+            stbi_write_hdr(filepath.c_str(), m_Width, m_Height, m_Channels, (float*)m_Data);
+        break;
+
+        default: ASSERT(false, "Invalid output image format");
+    }
+}
+
+Image::Image()
+    : m_Data(nullptr)
+    , m_Width(-1)
+    , m_Height(-1)
+    , m_Channels(0)
+    , m_Depth(0)
+    , m_Format(ImageFormat::UNKNOWN)
+{
 }
 
 Image::~Image()
@@ -177,6 +261,19 @@ void Image::LoadJPG(const void* buffer, size_t numBytes)
     const PixelBuffer imgBuffer = (const PixelBuffer)(buffer);
     m_Data = stbi_load_from_memory(imgBuffer, static_cast<int>(numBytes), &m_Width, &m_Height, &m_Channels, STBI_rgb);
     VCT_INFO("JPG Image Data at address: {0}", (void*)m_Data);
+}
+
+void Image::LoadHDR(const void* buffer, size_t numBytes)
+{
+    ASSERT(false, "Not Implemented");
+}
+
+void Image::LoadRAW(const void* buffer, size_t numBytes)
+{
+    m_Data = (uint8_t*)malloc(sizeof(uint8_t) * numBytes);
+    m_Channels = 3;
+    memcpy(m_Data, buffer, numBytes);
+    VCT_INFO("RAW Image Data at address: {0}", (void*)m_Data);
 }
 
 void Image::CalculateDepth()

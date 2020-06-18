@@ -6,20 +6,20 @@
 
 using namespace Vct;
 
+
 void Framebuffer::Rebuild()
 {
-    const Renderer& renderer = Renderer::Get();
-    renderer.GenerateFramebuffer(*this);
+    Renderer::GenerateFramebuffer(*this);
 }
 
 void Framebuffer::Destroy()
 {
-    const Renderer& renderer = Renderer::Get();
-    renderer.DeleteFramebuffer(*this);
+    Renderer::DeleteFramebuffer(*this);
 }
 
 Framebuffer::Framebuffer(const FramebufferParams& fbParams)
     : m_Params(fbParams)
+    , m_BufferId(0)
 {
 }
 

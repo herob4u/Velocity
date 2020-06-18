@@ -18,12 +18,12 @@ namespace Vct
         void GenerateTextureAsync(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode);
         void DeleteTextureAsync(uint32_t& texId);
 
-        void GenerateTexture(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode);
-        void DeleteTexture(uint32_t& texId);
-        void GenerateFramebuffer(Framebuffer& fb) const;
-        void DeleteFramebuffer(Framebuffer& fb) const;
-        void GenerateBuffer();
-        void DeleteBuffer();
+        static void GenerateTexture(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode);
+        static void DeleteTexture(Texture& texture);
+        static void GenerateFramebuffer(Framebuffer& fb);
+        static void DeleteFramebuffer(Framebuffer& fb);
+        static void Bind(Framebuffer& fb);
+        static void Unbind(Framebuffer&);
 
         static Renderer& Get();
     private:

@@ -9,6 +9,8 @@
 
 static const Path s_DefaultTexturePath("T_NullTexture.png");
 
+using namespace Vct;
+
 static int GetGLFormat(const Image* img)
 {
     ASSERT(img, "Invalid image");
@@ -64,29 +66,73 @@ static int GetGLWrapMode(Texture::WrapMode wrapMode)
     }
 }
 
+static void GetFormatAndDataType(ImageFormat imgFormat, Texture::Format& outFormat, Texture::DataType& outDataType)
+{
+    switch(imgFormat)
+    {
+        case ImageFormat::TGA:
+        {
+            outFormat = Texture::Format::RGBA;
+            outDataType = Texture::DataType::UNSIGNED_BYTE;
+        }
+        break;
+
+        case ImageFormat::PNG:
+        {
+            outFormat = Texture::Format::RGBA;
+            outDataType = Texture::DataType::UNSIGNED_BYTE;
+        }
+        break;
+
+        case ImageFormat::BMP:
+        {
+            outFormat = Texture::Format::RGBA;
+            outDataType = Texture::DataType::UNSIGNED_BYTE;
+        }
+        break;
+
+        case ImageFormat::JPG:
+        {
+            outFormat = Texture::Format::RGB;
+            outDataType = Texture::DataType::UNSIGNED_BYTE;
+        }
+        break;
+
+        case ImageFormat::HDR:
+        {
+            outFormat = Texture::Format::FLOAT;
+            outDataType = Texture::DataType::FLOAT;
+        }
+        break;
+
+        default: ASSERT(false, "Invalid Image format");
+    }
+}
+
 Texture* Texture::Allocate(uint16_t width, uint16_t height, Format format, DataType type, Texture::WrapMode wrapMode)
 {
-    Texture* texture = new Texture(StringId::NONE);
+    Texture* texture = new Texture(width, height, format, type, wrapMode);
     texture->m_Image.reset(nullptr);
     texture->m_TextureSlot = 0;
-    texture->m_WrapMode = wrapMode;
 
     int glFormat    = GetGLFormat(format);
     int glDataType  = GetGLDataType(type);
     int glWrapMode  = GetGLWrapMode(wrapMode);
 
-    Vct::Renderer& renderer = Vct::Renderer::Get();
-
-    renderer.GenerateTexture(texture->m_TextureId, nullptr, width, height, glFormat, glDataType, glWrapMode);
+    Renderer::GenerateTexture(texture->m_TextureId, nullptr, width, height, glFormat, glDataType, glWrapMode);
 
     return texture;
+}
+
+Texture* Texture::Allocate(const Texture::Params& textureParams)
+{
+    return Allocate(textureParams.Width, textureParams.Height, textureParams.Format, textureParams.DataType, textureParams.WrapMode);
 }
 
 Texture::Texture()
     : Resource(s_DefaultTexturePath)
     , m_TextureId(0)
     , m_TextureSlot(GL_TEXTURE0)
-    , m_WrapMode(WrapMode::REPEAT)
 {
     //m_Image = std::make_unique<Image>(s_DefaultTexturePath);
 }
@@ -95,7 +141,6 @@ Texture::Texture(const std::string& filePath)
     : Resource(filePath)
     , m_TextureId(0)
     , m_TextureSlot(GL_TEXTURE0)
-    , m_WrapMode(WrapMode::REPEAT)
 {
     //m_Image = std::make_unique<Image>(filePath);
 }
@@ -104,9 +149,15 @@ Texture::Texture(const Path& filePath)
     : Resource(filePath)
     , m_TextureId(0)
     , m_TextureSlot(GL_TEXTURE0)
-    , m_WrapMode(WrapMode::REPEAT)
 {
     //m_Image = std::make_unique<Image>(filePath);
+}
+
+Texture::~Texture()
+{
+    Destroy();
+
+    m_Image.reset(nullptr);
 }
 
 void Texture::Bind() const
@@ -137,45 +188,72 @@ void Texture::SetWrapMode(WrapMode wrapMode)
 
 void Texture::Destroy()
 {
-    Vct::Renderer& renderer = Vct::Renderer::Get();
-    renderer.DeleteTexture(m_TextureId);
+    Renderer::DeleteTexture(*this);
 }
 
-void Texture::GLInit()
+Ref<Image> Texture::RenderToImage() const
+{
+    ASSERT(m_TextureId != 0, "Texture not initialized");
+    ASSERT(m_Params.DataType != DataType::FLOAT, "Can only render 8-bit depth textures");
+
+    size_t imgSize = m_Params.Width * m_Params.Height * sizeof(uint8_t);
+    void* pixelBuffer = calloc(imgSize, sizeof(uint8_t));
+
+    glPixelStorei(GL_PACK_ALIGNMENT, 1);
+    glGetTextureImage(m_TextureId, 0, GetGLFormat(m_Params.Format), GetGLDataType(m_Params.DataType), (GLsizei)imgSize, pixelBuffer);
+
+    PixelBuffer imgbuffer = (PixelBuffer)pixelBuffer;
+
+    VCT_INFO("Pixel: {0}, {1}, {2}", imgbuffer[0], imgbuffer[1], imgbuffer[2]);
+    return Ref<Image>(Image::Acquire(m_Params.Width, m_Params.Height, pixelBuffer));
+}
+
+Texture::Texture(const Texture::Params& textureParams)
+    : Resource(StringId::NONE)
+    , m_TextureId(0)
+    , m_TextureSlot(GL_TEXTURE0)
+    , m_Params(textureParams)
+{
+}
+
+Texture::Texture(uint16_t width, uint16_t height, Format format, DataType type, WrapMode wrapMode)
+    : Resource(StringId::NONE)
+    , m_TextureId(0)
+    , m_TextureSlot(GL_TEXTURE0)
+{
+    m_Params.Width = width;
+    m_Params.Height = height;
+    m_Params.Format = format;
+    m_Params.DataType = type;
+    m_Params.WrapMode = wrapMode;
+}
+
+void Texture::Rebuild()
 {
     // 6408 for RGBA
-    const int format    = GetGLFormat(m_Image.get());
-    const int wrapMode  = GetGLWrapMode(m_WrapMode);
+    const int format    = GetGLFormat(m_Params.Format);
+    const int type      = GetGLDataType(m_Params.DataType);
+    const int wrapMode  = GetGLWrapMode(m_Params.WrapMode);
 
     Vct::Renderer& renderer = Vct::Renderer::Get();
 
-    renderer.GenerateTextureAsync(m_TextureId, m_Image->GetData(), m_Image->GetWidth(), m_Image->GetHeight(), format, wrapMode);
-    /*
-    glGenTextures(1, &m_TextureId);
-    glBindTexture(GL_TEXTURE_2D, m_TextureId);
-    glTexImage2D(GL_TEXTURE_2D, 0, format, m_Image->GetWidth(), m_Image->GetHeight(), 0, format, GL_UNSIGNED_BYTE, m_Image->GetData());
-    glGenerateMipmap(GL_TEXTURE_2D);
-
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
-    */
+    renderer.GenerateTextureAsync(m_TextureId, m_Image->GetData(), m_Image->GetWidth(), m_Image->GetHeight(), format, type, wrapMode);
 }
 
 bool Texture::Load(const void* rawBinary, size_t bytes)
 {
     ImageFormat format = Image::GetImageFormat(GetPath());
+    GetFormatAndDataType(format, m_Params.Format, m_Params.DataType);
+
     m_Image.reset(new Image(rawBinary, bytes, format));
 
-    GLInit();
+    Rebuild();
 
     return true;
 }
 
 void Texture::Unload()
 {
-    //glDeleteTextures(1, &m_TextureId);
     Vct::Renderer& renderer = Vct::Renderer::Get();
 
     renderer.DeleteTextureAsync(m_TextureId);

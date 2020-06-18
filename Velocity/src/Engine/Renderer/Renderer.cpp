@@ -36,7 +36,7 @@ void Renderer::GenerateTextureAsync(uint32_t& texId, const uint8_t* data, uint16
    m_TextureCmdQueue.Enqueue(cmd);
 }
 
-void Renderer::DeleteTextureAsync(uint32_t & texId)
+void Renderer::DeleteTextureAsync(uint32_t& texId)
 {
     RenderCmd* cmd = new DelTexturesCmd(texId);
     m_TextureCmdQueue.Enqueue(cmd);
@@ -56,12 +56,12 @@ void Renderer::GenerateTexture(uint32_t& texId, const uint8_t* data, uint16_t wi
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 }
 
-void Renderer::DeleteTexture(uint32_t& texId)
+void Renderer::DeleteTexture(Texture& texture)
 {
-    glDeleteTextures(1, &texId);
+    glDeleteTextures(1, &texture.m_TextureId);
 }
 
-void Renderer::GenerateFramebuffer(Framebuffer& fb) const
+void Renderer::GenerateFramebuffer(Framebuffer& fb)
 {
     ASSERT(fb.m_BufferId == 0, "Framebuffer already occupied");
     glGenFramebuffers(1, &fb.m_BufferId);
@@ -88,7 +88,7 @@ void Renderer::GenerateFramebuffer(Framebuffer& fb) const
 
     ASSERT(glAttachment != 0, "Invalid Framebuffer attachment");
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_2D, fb.m_Texture->GetTextureId(), 0);
+    glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_2D, fb.m_Texture->GetRendererId(), 0);
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
         ASSERT(false, "Framebuffer incomplete");
@@ -96,9 +96,19 @@ void Renderer::GenerateFramebuffer(Framebuffer& fb) const
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
-void Renderer::DeleteFramebuffer(Framebuffer& fb) const
+void Renderer::DeleteFramebuffer(Framebuffer& fb)
 {
     glDeleteFramebuffers(1, &fb.m_BufferId);
+}
+
+void Renderer::Bind(Framebuffer& fb)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, fb.GetRendererId());
+}
+
+void Renderer::Unbind(Framebuffer&)
+{
+    glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
 
 Renderer& Renderer::Get()

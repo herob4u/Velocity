@@ -6,7 +6,7 @@
 Resource* TextureMgr::CreateResource(const Path& resPath)
 {
     // @TODO: Parse extension and store format hint for proper loading here
-    return new Texture(resPath);
+    return new Vct::Texture(resPath);
 }
 
 void TextureMgr::DestroyResource(Resource& res)

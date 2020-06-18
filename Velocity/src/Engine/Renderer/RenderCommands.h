@@ -5,11 +5,12 @@
 
 #include <queue>
 
-class Texture;
 class ShaderProgram;
 
 namespace Vct
 {
+    class Texture;
+
     class RenderCommands
     {
     public:

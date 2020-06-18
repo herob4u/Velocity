@@ -3,25 +3,31 @@
 
 /* Experimental */
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Renderer/Texture/Image.h"
 #include "Engine/Renderer/Texture/Texture.h"
 #include "Engine/Renderer/Texture/TextureMgr.h"
 #include "Engine/IO/FileMgr.h"
 
 #include "Engine/Renderer/Mesh/Model.h"
+#include "Engine/Core/Application.h"
 
 using namespace Vct;
 
 ViewportLayer::ViewportLayer()
     : Layer("ViewportLayer")
+    , m_Camera(Camera(45.f, 16.f/9.f))
 {
+    const Window& window = Application::Get().GetWindow();
+
+    FramebufferParams fbParams;
+    fbParams.Width  = window.GetWidth();
+    fbParams.Height = window.GetHeight();
+
+    m_ScreenshotBuffer = Framebuffer::CreateColorBuffer(0, fbParams);
+
     FileMgr& fileMgr = FileMgr::Get();
     ResourceMgr* texMgr = ResourceMgrRegistry::Get().GetMgr(Texture::GetStaticType());
     m_BackgroundTexture = texMgr->GetResource<Texture>("beardipped.bmp");
-    m_Model = Path("asset2.txt");
-    m_Model.Load();
-
-    m_Model2 = Path("asset3.txt");
-    m_Model2.Load();
 
     ASSERT(m_BackgroundTexture.Get(), "Null texture!");
 
@@ -54,9 +60,15 @@ void ViewportLayer::OnUpdate(float dt)
     RenderCommands::SetClearColor(0.2f, 0.2f, 0.2f);
     //VCT_TRACE("Asset Dir: {0}", ASSET_DIR);
 
-    renderer.BeginScene();
-    RenderCommands::DrawImage(m_TexturedQuadShader, m_BackgroundTexture.Get());
+    renderer.BeginScene(m_Camera);
+        Renderer::Bind(*m_ScreenshotBuffer);
+        RenderCommands::DrawImage(m_TexturedQuadShader, m_BackgroundTexture.Get());
+        Renderer::Unbind(*m_ScreenshotBuffer);
     renderer.EndScene();
+    
+    //Texture* screenshot         = m_ScreenshotBuffer->GetTextureTarget();
+    //Ref<Image> screenshot_img   = screenshot->RenderToImage();
+    //screenshot_img->Write(std::string(ASSET_DIR) + "screenshot.tga");
 }
 
 void ViewportLayer::OnDetached()
