@@ -24,7 +24,7 @@ namespace Vct
         static ImageFormat GetImageFormat(const Path& filepath);
 
         /* Acquires ownership of an image represented by memory located in sourceBuffer */
-        static Image* Acquire(int width, int height, void* sourceBuffer);
+        static Image* Acquire(int width, int height, void* sourceBuffer, int channels = 3, int depth = 8);
 
         Image(const std::string& filePath);
         Image(const Path& filePath);

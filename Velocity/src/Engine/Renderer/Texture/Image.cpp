@@ -50,12 +50,14 @@ ImageFormat Image::GetImageFormat(const Path& filepath)
     return ImageFormat::UNKNOWN;
 }
 
-Image* Image::Acquire(int width, int height, void* sourceBuffer)
+Image* Image::Acquire(int width, int height, void* sourceBuffer, int channels, int depth)
 {
     Image* img = new Image();
     img->m_Data = (PixelBuffer)sourceBuffer;
     img->m_Width = width;
     img->m_Height = height;
+    img->m_Channels = channels;
+    img->m_Depth = depth;
 
     return img;
 }
@@ -134,6 +136,7 @@ Image::Image(const void* sourceBuffer, size_t numBytes, ImageFormat asFormat)
 void Image::Write(const std::string& filepath) const
 {
     ImageFormat outputFormat = GetImageFormat(filepath);
+    stbi_flip_vertically_on_write(1);
     switch(outputFormat)
     {
         case ImageFormat::TGA:

@@ -186,7 +186,7 @@ Ref<Image> Texture::RenderToImage() const
     ASSERT(m_TextureId != 0, "Texture not initialized");
     ASSERT(m_Params.DataType != DataType::FLOAT, "Can only render 8-bit depth textures");
 
-    size_t imgSize = m_Params.Width * m_Params.Height * sizeof(uint8_t);
+    size_t imgSize = m_Params.Width * m_Params.Height * sizeof(uint8_t) * 3;
     void* pixelBuffer = calloc(imgSize, sizeof(uint8_t));
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
@@ -194,7 +194,6 @@ Ref<Image> Texture::RenderToImage() const
 
     PixelBuffer imgbuffer = (PixelBuffer)pixelBuffer;
 
-    VCT_INFO("Pixel: {0}, {1}, {2}", imgbuffer[0], imgbuffer[1], imgbuffer[2]);
     return Ref<Image>(Image::Acquire(m_Params.Width, m_Params.Height, pixelBuffer));
 }
 

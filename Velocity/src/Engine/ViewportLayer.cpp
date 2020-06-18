@@ -50,7 +50,7 @@ ViewportLayer::ViewportLayer()
 
 void ViewportLayer::OnAttached()
 {
-/*
+
     Renderer& renderer = Renderer::Get();
 
     RenderCommands::ClearBuffers();
@@ -68,7 +68,7 @@ void ViewportLayer::OnAttached()
     Texture* screenshot = m_ScreenshotBuffer->GetTextureTarget();
     Ref<Image> screenshot_img = screenshot->RenderToImage();
     screenshot_img->Write(std::string(ASSET_DIR) + "screenshot.tga");
-    */
+    
 }
 
 void ViewportLayer::OnUpdate(float dt)
