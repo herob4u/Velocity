@@ -16,7 +16,7 @@ namespace Vct
 
         enum class Format : uint8_t
         {
-            R,
+            GREYSCALE,
             RG,
             RGB,
             RGBA,

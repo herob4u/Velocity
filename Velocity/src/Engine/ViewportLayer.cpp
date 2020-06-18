@@ -50,6 +50,25 @@ ViewportLayer::ViewportLayer()
 
 void ViewportLayer::OnAttached()
 {
+/*
+    Renderer& renderer = Renderer::Get();
+
+    RenderCommands::ClearBuffers();
+    RenderCommands::SetClearColor(0.2f, 0.2f, 0.2f);
+    //VCT_TRACE("Asset Dir: {0}", ASSET_DIR);
+
+    while(!m_BackgroundTexture.IsValid()) {}
+
+    renderer.BeginScene(m_Camera);
+    Renderer::Bind(*m_ScreenshotBuffer);
+    RenderCommands::DrawImage(m_TexturedQuadShader, m_BackgroundTexture.Get());
+    Renderer::Unbind(*m_ScreenshotBuffer);
+    renderer.EndScene();
+
+    Texture* screenshot = m_ScreenshotBuffer->GetTextureTarget();
+    Ref<Image> screenshot_img = screenshot->RenderToImage();
+    screenshot_img->Write(std::string(ASSET_DIR) + "screenshot.tga");
+    */
 }
 
 void ViewportLayer::OnUpdate(float dt)
@@ -61,14 +80,8 @@ void ViewportLayer::OnUpdate(float dt)
     //VCT_TRACE("Asset Dir: {0}", ASSET_DIR);
 
     renderer.BeginScene(m_Camera);
-        Renderer::Bind(*m_ScreenshotBuffer);
         RenderCommands::DrawImage(m_TexturedQuadShader, m_BackgroundTexture.Get());
-        Renderer::Unbind(*m_ScreenshotBuffer);
     renderer.EndScene();
-    
-    //Texture* screenshot         = m_ScreenshotBuffer->GetTextureTarget();
-    //Ref<Image> screenshot_img   = screenshot->RenderToImage();
-    //screenshot_img->Write(std::string(ASSET_DIR) + "screenshot.tga");
 }
 
 void ViewportLayer::OnDetached()

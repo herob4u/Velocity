@@ -33,7 +33,7 @@ static int GetGLFormat(Texture::Format format)
 {
     switch(format)
     {
-        case Texture::Format::R:                return GL_RED;
+        case Texture::Format::GREYSCALE:        return GL_RED;
         case Texture::Format::RG:               return GL_RG;
         case Texture::Format::RGB:              return GL_RGB;
         case Texture::Format::RGBA:             return GL_RGBA;
@@ -66,46 +66,36 @@ static int GetGLWrapMode(Texture::WrapMode wrapMode)
     }
 }
 
-static void GetFormatAndDataType(ImageFormat imgFormat, Texture::Format& outFormat, Texture::DataType& outDataType)
+static void GetFormatAndDataType(ImageFormat imgFormat, int channels, Texture::Format& outFormat, Texture::DataType& outDataType)
 {
-    switch(imgFormat)
+    if(channels == 3)
     {
-        case ImageFormat::TGA:
+        // Could be ordinary 8-bit RGB image, or 3 channel HDR
+        if(imgFormat == ImageFormat::HDR)
         {
-            outFormat = Texture::Format::RGBA;
-            outDataType = Texture::DataType::UNSIGNED_BYTE;
-        }
-        break;
-
-        case ImageFormat::PNG:
-        {
-            outFormat = Texture::Format::RGBA;
-            outDataType = Texture::DataType::UNSIGNED_BYTE;
-        }
-        break;
-
-        case ImageFormat::BMP:
-        {
-            outFormat = Texture::Format::RGBA;
-            outDataType = Texture::DataType::UNSIGNED_BYTE;
-        }
-        break;
-
-        case ImageFormat::JPG:
-        {
-            outFormat = Texture::Format::RGB;
-            outDataType = Texture::DataType::UNSIGNED_BYTE;
-        }
-        break;
-
-        case ImageFormat::HDR:
-        {
-            outFormat = Texture::Format::FLOAT;
+            outFormat   = Texture::Format::FLOAT;
             outDataType = Texture::DataType::FLOAT;
         }
-        break;
-
-        default: ASSERT(false, "Invalid Image format");
+        else
+        {
+            outFormat   = Texture::Format::RGB;
+            outDataType = Texture::DataType::UNSIGNED_BYTE;
+        }
+    }
+    else if(channels == 4)
+    {
+        outFormat   = Texture::Format::RGBA;
+        outDataType = Texture::DataType::UNSIGNED_BYTE;
+    }
+    else if(channels == 1)
+    {
+        // Grayscale
+        outFormat   = Texture::Format::GREYSCALE;
+        outDataType = Texture::DataType::UNSIGNED_BYTE;
+    }
+    else
+    {
+        ASSERT(false, "Unsupported image format");
     }
 }
 
@@ -243,10 +233,9 @@ void Texture::Rebuild()
 bool Texture::Load(const void* rawBinary, size_t bytes)
 {
     ImageFormat format = Image::GetImageFormat(GetPath());
-    GetFormatAndDataType(format, m_Params.Format, m_Params.DataType);
-
     m_Image.reset(new Image(rawBinary, bytes, format));
 
+    GetFormatAndDataType(format, m_Image->GetNumChannels(), m_Params.Format, m_Params.DataType);
     Rebuild();
 
     return true;
