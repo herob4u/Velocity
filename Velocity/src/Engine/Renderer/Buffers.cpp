@@ -19,7 +19,7 @@ void Framebuffer::Destroy()
 
 Framebuffer::Framebuffer(const FramebufferParams& fbParams)
     : m_Params(fbParams)
-    , m_BufferId(0)
+    , m_RendererId(0)
 {
 }
 

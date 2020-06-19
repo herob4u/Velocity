@@ -1,0 +1,5 @@
+- Subimage extraction
+- Cubemap - 6 independent images, one texture
+- Skybox  - special cubemap that can extract 6 independent images, forwards to cubemap, and
+  contains draw information.
+- CameraController!!!!!

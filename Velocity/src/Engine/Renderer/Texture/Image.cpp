@@ -192,6 +192,42 @@ void Image::Release()
     }
 }
 
+uint8_t Image::PixelAt(int x, int y) const
+{
+    const size_t stride = ((m_Depth / sizeof(uint8_t)) * m_Channels);
+    const int idx = ((y -1) * m_Width + x - 1) * stride;
+
+    return m_Data[idx];
+}
+
+float Image::PixelAt_f(int x, int y) const
+{
+    const size_t stride = ((m_Depth / sizeof(uint8_t)) * m_Channels);
+    const int idx = ((y - 1) * m_Width + x - 1) * stride;
+
+    return ((float*)m_Data)[idx];
+}
+
+Image* Image::Extract(int x, int y, int w, int h) const
+{
+    const size_t stride = ((m_Depth/sizeof(uint8_t)) * m_Channels);
+    const int idx = ((y - 1) * m_Width + x - 1) * stride;
+    
+    PixelBuffer start = &m_Data[idx];
+
+    Image* subImg = new Image();
+    subImg->m_Channels = m_Channels;
+    subImg->m_Depth = m_Depth;
+    subImg->m_Format = m_Format;
+    subImg->m_Width = w;
+    subImg->m_Height = h;
+    subImg->m_Data = (PixelBuffer)malloc( stride * w * h );
+
+    memcpy(subImg->m_Data, start, stride * w * h);
+
+    return subImg;
+}
+
 // Disable padding so that fread(sizeof(TGAHeader)) works as expected.
 #pragma pack(1)
 struct TGAHeader

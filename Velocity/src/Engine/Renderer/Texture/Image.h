@@ -34,11 +34,16 @@ namespace Vct
         FORCEINLINE int GetWidth() const { return m_Width; }
         FORCEINLINE int GetHeight() const { return m_Height; }
         FORCEINLINE int GetNumChannels() const { return m_Channels; }
-        FORCEINLINE int GetDepth() const { return m_Depth; } // aka BPP
+        FORCEINLINE int GetDepth() const { return m_Depth; } // aka BPC
         FORCEINLINE const PixelBuffer GetData() const { return m_Data; }
         FORCEINLINE ImageFormat GetFormat() const { return m_Format; }
 
         void Write(const std::string& filepath) const;
+        uint8_t PixelAt(int x, int y) const;
+        float PixelAt_f(int x, int y) const;
+
+        /* Extract a portion of the image as a new copy */
+        Image* Extract(int x, int y, int w, int h) const;
 
     protected:
         Image();

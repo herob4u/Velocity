@@ -63,9 +63,9 @@ void Renderer::DeleteTexture(Texture& texture)
 
 void Renderer::GenerateFramebuffer(Framebuffer& fb)
 {
-    ASSERT(fb.m_BufferId == 0, "Framebuffer already occupied");
-    glGenFramebuffers(1, &fb.m_BufferId);
-    glBindFramebuffer(GL_FRAMEBUFFER, fb.m_BufferId);
+    ASSERT(fb.m_RendererId == 0, "Framebuffer already occupied");
+    glGenFramebuffers(1, &fb.m_RendererId);
+    glBindFramebuffer(GL_FRAMEBUFFER, fb.m_RendererId);
 
     // Attaches the texture target to this framebuffer
     const uint8_t attachmentSlot = fb.GetAttachmentSlot();
@@ -98,7 +98,8 @@ void Renderer::GenerateFramebuffer(Framebuffer& fb)
 
 void Renderer::DeleteFramebuffer(Framebuffer& fb)
 {
-    glDeleteFramebuffers(1, &fb.m_BufferId);
+    if(fb.m_RendererId != 0)
+        glDeleteFramebuffers(1, &fb.m_RendererId);
 }
 
 void Renderer::Bind(Framebuffer& fb)
