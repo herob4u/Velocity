@@ -11,7 +11,7 @@ static Resource::Type ResType_Model("model");
 
 namespace Vct
 {
-    class Texture;
+    class Texture2D;
 
     /* A Model is an aggregate of meshes decomposed by materials. This exist to 
     *  describe meshes with multiple materials using a material id system.

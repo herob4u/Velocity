@@ -4,7 +4,7 @@
 /* Experimental */
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Texture/Image.h"
-#include "Engine/Renderer/Texture/Texture.h"
+#include "Engine/Renderer/Texture/Texture2D.h"
 #include "Engine/Renderer/Texture/TextureMgr.h"
 #include "Engine/IO/FileMgr.h"
 
@@ -26,8 +26,8 @@ ViewportLayer::ViewportLayer()
     m_ScreenshotBuffer = Framebuffer::CreateColorBuffer(0, fbParams);
 
     FileMgr& fileMgr = FileMgr::Get();
-    ResourceMgr* texMgr = ResourceMgrRegistry::Get().GetMgr(Texture::GetStaticType());
-    m_BackgroundTexture = texMgr->GetResource<Texture>("beardipped.bmp");
+    ResourceMgr* texMgr = ResourceMgrRegistry::Get().GetMgr(Texture2D::GetStaticType());
+    m_BackgroundTexture = texMgr->GetResource<Texture2D>("beardipped.bmp");
 
     ASSERT(m_BackgroundTexture.Get(), "Null texture!");
 
@@ -65,7 +65,7 @@ void ViewportLayer::OnAttached()
     Renderer::Unbind(*m_ScreenshotBuffer);
     renderer.EndScene();
 
-    Texture* screenshot = m_ScreenshotBuffer->GetTextureTarget();
+    Texture2D* screenshot = (Texture2D*)m_ScreenshotBuffer->GetTextureTarget();
     Ref<Image> screenshot_img = screenshot->RenderToImage();
     screenshot_img->Write(std::string(ASSET_DIR) + "screenshot.tga");
     

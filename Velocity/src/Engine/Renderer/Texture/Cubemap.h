@@ -1,5 +1,6 @@
 #pragma once
 
+#include "Texture.h"
 #include "Engine/Core/Core.h"
 #include "Engine/Core/Types/Path.h"
 
@@ -7,7 +8,7 @@ namespace Vct
 {
     class Image;
 
-    class Cubemap
+    class Cubemap : public Texture
     {
     public:
         Cubemap(const Path& right,
@@ -19,12 +20,9 @@ namespace Vct
 
         ~Cubemap();
 
-        void Destroy();
-
-        FORCEINLINE uint32_t GetRendererId() const { return m_RendererId; }
+        virtual void Destroy() override;
     protected:
         void InitializeCubemap(const std::vector<Image*> faces);
     private:
-        uint32_t m_RendererId;
     };
 }

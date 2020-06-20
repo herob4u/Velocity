@@ -1,13 +1,12 @@
 #include "vctPCH.h"
 #include "Cubemap.h"
 
-#include "Texture/Image.h"
+#include "Image.h"
 
 #include "glad/glad.h"
 using namespace Vct;
 
 Cubemap::Cubemap(const Path& right, const Path& left, const Path& top, const Path& bottom, const Path& back, const Path& front)
-    : m_RendererId(0)
 {
     Image img_right     = Image(right);
     Image img_left      = Image(left);
@@ -26,10 +25,10 @@ Cubemap::~Cubemap()
 
 void Cubemap::Destroy()
 {
-    if(m_RendererId != 0)
+    if(RendererId != 0)
     {
-        glDeleteTextures(1, &m_RendererId);
-        m_RendererId = 0;
+        glDeleteTextures(1, &RendererId);
+        RendererId = 0;
     }
 }
 
@@ -43,8 +42,8 @@ void Cubemap::InitializeCubemap(const std::vector<Image*> faces)
 
     Destroy();
 
-    glGenTextures(1, &m_RendererId);
-    glBindTexture(GL_TEXTURE_CUBE_MAP, m_RendererId);
+    glGenTextures(1, &RendererId);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, RendererId);
 
     for(int i = 0; i < faces.size(); i++)
     {

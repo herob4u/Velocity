@@ -2,7 +2,7 @@
 
 #include "Renderer.h"
 
-#include "Texture/Texture.h"
+#include "Texture/Texture2D.h"
 
 #include "glad/glad.h"
 
@@ -56,9 +56,9 @@ void Renderer::GenerateTexture(uint32_t& texId, const uint8_t* data, uint16_t wi
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
 }
 
-void Renderer::DeleteTexture(Texture& texture)
+void Renderer::DeleteTexture(Texture2D& texture)
 {
-    glDeleteTextures(1, &texture.m_TextureId);
+    glDeleteTextures(1, &texture.RendererId);
 }
 
 void Renderer::GenerateFramebuffer(Framebuffer& fb)

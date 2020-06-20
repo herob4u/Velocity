@@ -48,7 +48,7 @@ namespace Vct
     private:
         uint32_t m_RendererId;
         Texture* m_Texture;
-        Cubemap* m_Cubemap;
+
         FramebufferParams m_Params;
         uint8_t m_AttachmentSlot;
         Type m_Type;

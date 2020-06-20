@@ -2,7 +2,8 @@
 #include "Buffers.h"
 #include "Renderer.h"
 
-#include "Texture/Texture.h"
+#include "Texture/Texture2D.h"
+#include "Texture/Cubemap.h"
 
 using namespace Vct;
 
@@ -28,7 +29,7 @@ Framebuffer* Framebuffer::CreateColorBuffer(uint8_t attachmentSlot, const Frameb
     Framebuffer* fb         = new Framebuffer(fbParams);
     fb->m_AttachmentSlot    = attachmentSlot;
     fb->m_Type              = Type::COLOR;
-    fb->m_Texture           = Texture::Allocate(fb->GetWidth(), fb->GetHeight(), Texture::Format::RGB, Texture::DataType::UNSIGNED_BYTE);
+    fb->m_Texture           = Texture2D::Allocate(fb->GetWidth(), fb->GetHeight(), Texture2D::Format::RGB, Texture2D::DataType::UNSIGNED_BYTE);
 
     fb->Rebuild();
 
@@ -40,7 +41,7 @@ Framebuffer* Framebuffer::CreateDepthBuffer(const FramebufferParams& fbParams)
     Framebuffer* fb         = new Framebuffer(fbParams);
     fb->m_AttachmentSlot    = 0;
     fb->m_Type              = Type::DEPTH;
-    fb->m_Texture           = Texture::Allocate(fb->GetWidth(), fb->GetHeight(), Texture::Format::RGBA, Texture::DataType::UNSIGNED_BYTE);
+    fb->m_Texture           = Texture2D::Allocate(fb->GetWidth(), fb->GetHeight(), Texture2D::Format::RGBA, Texture2D::DataType::UNSIGNED_BYTE);
 
     fb->Rebuild();
 
@@ -52,7 +53,7 @@ Framebuffer* Framebuffer::CreateStencilBuffer(const FramebufferParams& fbParams)
     Framebuffer* fb         = new Framebuffer(fbParams);
     fb->m_AttachmentSlot    = 0;
     fb->m_Type              = Type::STENCIL;
-    fb->m_Texture           = Texture::Allocate(fb->GetWidth(), fb->GetHeight(), Texture::Format::RGBA, Texture::DataType::UNSIGNED_BYTE);
+    fb->m_Texture           = Texture2D::Allocate(fb->GetWidth(), fb->GetHeight(), Texture2D::Format::RGBA, Texture2D::DataType::UNSIGNED_BYTE);
 
     fb->Rebuild();
 
@@ -64,7 +65,7 @@ Framebuffer* Framebuffer::CreateDepthStencilBuffer(const FramebufferParams& fbPa
     Framebuffer* fb         = new Framebuffer(fbParams);
     fb->m_AttachmentSlot    = 0;
     fb->m_Type              = Type::DEPTH_STENCIL;
-    fb->m_Texture           = Texture::Allocate(fb->GetWidth(), fb->GetHeight(), Texture::Format::DEPTH_STENCIL, Texture::DataType::DEPTH_STENCIL);
+    fb->m_Texture           = Texture2D::Allocate(fb->GetWidth(), fb->GetHeight(), Texture2D::Format::DEPTH_STENCIL, Texture2D::DataType::DEPTH_STENCIL);
 
     fb->Rebuild();
 

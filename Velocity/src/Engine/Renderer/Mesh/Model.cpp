@@ -1,7 +1,7 @@
 #include "vctPCH.h"
 #include "Model.h"
 
-#include "Engine/Renderer/Texture/Texture.h"
+#include "Engine/Renderer/Texture/Texture2D.h"
 
 using namespace Vct;
 
@@ -22,7 +22,7 @@ Model::Model(const Path& resPath)
 
 bool Model::Load(const void* rawBinary, size_t bytes)
 {
-    ResourceMgr* mgr = ResourceMgrRegistry::Get().GetMgr(Texture::GetStaticType());
+    ResourceMgr* mgr = ResourceMgrRegistry::Get().GetMgr(Texture2D::GetStaticType());
 
     return true;
 }

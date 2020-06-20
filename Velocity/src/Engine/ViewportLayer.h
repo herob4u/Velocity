@@ -19,7 +19,7 @@ namespace Vct
         virtual void OnDetached() override;
 
     private:
-        TResourcePtr<class Texture> m_BackgroundTexture;
+        TResourcePtr<class Texture2D> m_BackgroundTexture;
         std::shared_ptr<ShaderProgram> m_TexturedQuadShader;
         class Framebuffer* m_ScreenshotBuffer;
         Camera m_Camera;

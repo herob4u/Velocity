@@ -8,7 +8,7 @@
 
 namespace Vct
 {
-    class Texture;
+    class Texture2D;
 
     class Material : public Resource
     {
@@ -31,11 +31,11 @@ namespace Vct
         void SetMetallicIntensity(float alpha);
         void SetRoughnessIntensity(float alpha);
 
-        void SetDiffuseMap(const Texture* diffuseMap);
-        void SetEmissiveMap(const Texture* emissiveMap);
-        void SetNormalMap(const Texture* normalMap);
-        void SetMetallicMap(const Texture* metallicMap);
-        void SetRoughnessMap(const Texture* roughnessMap);
+        void SetDiffuseMap(const Texture2D* diffuseMap);
+        void SetEmissiveMap(const Texture2D* emissiveMap);
+        void SetNormalMap(const Texture2D* normalMap);
+        void SetMetallicMap(const Texture2D* metallicMap);
+        void SetRoughnessMap(const Texture2D* roughnessMap);
     protected:
 
     private:

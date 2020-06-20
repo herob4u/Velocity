@@ -2,7 +2,7 @@
 #include "RenderCommands.h"
 
 /* Experimental */
-#include "Texture/Texture.h"
+#include "Texture/Texture2D.h"
 #include "Mesh/MeshFactory.h"
 #include "Mesh/Mesh.h"
 #include "ShaderProgram.h"
@@ -26,7 +26,7 @@ void RenderCommands::SetClearColor(float r, float g, float b)
     glClearColor(r, g, b, 1.f);
 }
 
-void RenderCommands::DrawImage(Ref<ShaderProgram> shader, Texture* texture)
+void RenderCommands::DrawImage(Ref<ShaderProgram> shader, Texture2D* texture)
 {
     if(!texture)
         VCT_WARN("No background texture found");

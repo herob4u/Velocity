@@ -107,7 +107,7 @@ protected:
 };
 
 #include "Engine/Renderer/Texture/TextureMgr.h"
-#include "Engine/Renderer/Texture/Texture.h"
+#include "Engine/Renderer/Texture/Texture2D.h"
 #include "Engine/Renderer/Mesh/Model.h"
 
 int main(int argc, char** argv)
@@ -127,9 +127,9 @@ int main(int argc, char** argv)
     Vct::Application app = Vct::Application();
     {
         // This should fail!
-        TResourcePtr<Vct::Texture> testTexture(mgr.GetAbsPath("Pinup_A.tga"));
+        TResourcePtr<Vct::Texture2D> testTexture(mgr.GetAbsPath("Pinup_A.tga"));
         VCT_INFO(mgr.GetAbsPath("Pinup_A.tga").GetFullPathRef());
-        Vct::Texture* texture = testTexture.Load();
+        Vct::Texture2D* texture = testTexture.Load();
 
         TResourcePtr<TextResource> asset1("asset1.txt");
         asset1.Load();

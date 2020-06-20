@@ -1,5 +1,5 @@
 #include "vctPCH.h"
-#include "Texture.h"
+#include "Texture2D.h"
 
 #include "Image.h"
 
@@ -29,69 +29,69 @@ static int GetGLFormat(const Image* img)
     return GL_RGBA;
 }
 
-static int GetGLFormat(Texture::Format format)
+static int GetGLFormat(Texture2D::Format format)
 {
     switch(format)
     {
-        case Texture::Format::GREYSCALE:        return GL_RED;
-        case Texture::Format::RG:               return GL_RG;
-        case Texture::Format::RGB:              return GL_RGB;
-        case Texture::Format::RGBA:             return GL_RGBA;
-        case Texture::Format::FLOAT:            return GL_RGB16F;
-        case Texture::Format::DEPTH_STENCIL:    return GL_DEPTH24_STENCIL8;
+        case Texture2D::Format::GREYSCALE:        return GL_RED;
+        case Texture2D::Format::RG:               return GL_RG;
+        case Texture2D::Format::RGB:              return GL_RGB;
+        case Texture2D::Format::RGBA:             return GL_RGBA;
+        case Texture2D::Format::FLOAT:            return GL_RGB16F;
+        case Texture2D::Format::DEPTH_STENCIL:    return GL_DEPTH24_STENCIL8;
         default: return GL_RGBA;
     }
 }
 
-static int GetGLDataType(Texture::DataType dataType)
+static int GetGLDataType(Texture2D::DataType dataType)
 {
     switch(dataType)
     {
-        case Texture::DataType::UNSIGNED_BYTE:  return GL_UNSIGNED_BYTE;
-        case Texture::DataType::FLOAT:          return GL_FLOAT;
-        case Texture::DataType::INT:            return GL_UNSIGNED_INT;
-        case Texture::DataType::DEPTH_STENCIL:  return GL_UNSIGNED_INT_24_8;
+        case Texture2D::DataType::UNSIGNED_BYTE:  return GL_UNSIGNED_BYTE;
+        case Texture2D::DataType::FLOAT:          return GL_FLOAT;
+        case Texture2D::DataType::INT:            return GL_UNSIGNED_INT;
+        case Texture2D::DataType::DEPTH_STENCIL:  return GL_UNSIGNED_INT_24_8;
         default:                                return GL_UNSIGNED_BYTE;
     }
 }
 
-static int GetGLWrapMode(Texture::WrapMode wrapMode)
+static int GetGLWrapMode(Texture2D::WrapMode wrapMode)
 {
     switch(wrapMode)
     {
-        case Texture::WrapMode::CLAMP:  return GL_CLAMP_TO_EDGE;
-        case Texture::WrapMode::REPEAT: return GL_REPEAT;
-        case Texture::WrapMode::MIRROR: return GL_MIRRORED_REPEAT;
+        case Texture2D::WrapMode::CLAMP:  return GL_CLAMP_TO_EDGE;
+        case Texture2D::WrapMode::REPEAT: return GL_REPEAT;
+        case Texture2D::WrapMode::MIRROR: return GL_MIRRORED_REPEAT;
         default:                        return GL_REPEAT;
     }
 }
 
-static void GetFormatAndDataType(ImageFormat imgFormat, int channels, Texture::Format& outFormat, Texture::DataType& outDataType)
+static void GetFormatAndDataType(ImageFormat imgFormat, int channels, Texture2D::Format& outFormat, Texture2D::DataType& outDataType)
 {
     if(channels == 3)
     {
         // Could be ordinary 8-bit RGB image, or 3 channel HDR
         if(imgFormat == ImageFormat::HDR)
         {
-            outFormat   = Texture::Format::FLOAT;
-            outDataType = Texture::DataType::FLOAT;
+            outFormat   = Texture2D::Format::FLOAT;
+            outDataType = Texture2D::DataType::FLOAT;
         }
         else
         {
-            outFormat   = Texture::Format::RGB;
-            outDataType = Texture::DataType::UNSIGNED_BYTE;
+            outFormat   = Texture2D::Format::RGB;
+            outDataType = Texture2D::DataType::UNSIGNED_BYTE;
         }
     }
     else if(channels == 4)
     {
-        outFormat   = Texture::Format::RGBA;
-        outDataType = Texture::DataType::UNSIGNED_BYTE;
+        outFormat   = Texture2D::Format::RGBA;
+        outDataType = Texture2D::DataType::UNSIGNED_BYTE;
     }
     else if(channels == 1)
     {
         // Grayscale
-        outFormat   = Texture::Format::GREYSCALE;
-        outDataType = Texture::DataType::UNSIGNED_BYTE;
+        outFormat   = Texture2D::Format::GREYSCALE;
+        outDataType = Texture2D::DataType::UNSIGNED_BYTE;
     }
     else
     {
@@ -99,9 +99,9 @@ static void GetFormatAndDataType(ImageFormat imgFormat, int channels, Texture::F
     }
 }
 
-Texture* Texture::Allocate(uint16_t width, uint16_t height, Format format, DataType type, Texture::WrapMode wrapMode)
+Texture2D* Texture2D::Allocate(uint16_t width, uint16_t height, Format format, DataType type, Texture2D::WrapMode wrapMode)
 {
-    Texture* texture = new Texture(width, height, format, type, wrapMode);
+    Texture2D* texture = new Texture2D(width, height, format, type, wrapMode);
     texture->m_Image.reset(nullptr);
     texture->m_TextureSlot = 0;
 
@@ -109,105 +109,104 @@ Texture* Texture::Allocate(uint16_t width, uint16_t height, Format format, DataT
     int glDataType  = GetGLDataType(type);
     int glWrapMode  = GetGLWrapMode(wrapMode);
 
-    Renderer::GenerateTexture(texture->m_TextureId, nullptr, width, height, glFormat, glDataType, glWrapMode);
+    Renderer::GenerateTexture(texture->RendererId, nullptr, width, height, glFormat, glDataType, glWrapMode);
 
     return texture;
 }
 
-Texture* Texture::Allocate(const Texture::Params& textureParams)
+Texture2D* Texture2D::Allocate(const Texture2D::Params& textureParams)
 {
     return Allocate(textureParams.Width, textureParams.Height, textureParams.Format, textureParams.DataType, textureParams.WrapMode);
 }
 
-Texture::Texture()
+Texture2D::Texture2D()
     : Resource(s_DefaultTexturePath)
-    , m_TextureId(0)
     , m_TextureSlot(GL_TEXTURE0)
 {
     //m_Image = std::make_unique<Image>(s_DefaultTexturePath);
 }
 
-Texture::Texture(const std::string& filePath)
+Texture2D::Texture2D(const std::string& filePath)
     : Resource(filePath)
-    , m_TextureId(0)
     , m_TextureSlot(GL_TEXTURE0)
 {
     //m_Image = std::make_unique<Image>(filePath);
 }
 
-Texture::Texture(const Path& filePath)
+Texture2D::Texture2D(const Path& filePath)
     : Resource(filePath)
-    , m_TextureId(0)
     , m_TextureSlot(GL_TEXTURE0)
 {
     //m_Image = std::make_unique<Image>(filePath);
 }
 
-Texture::~Texture()
+Texture2D::~Texture2D()
 {
     Destroy();
 
     m_Image.reset(nullptr);
 }
 
-void Texture::Bind() const
+void Texture2D::Bind() const
 {
     glActiveTexture(m_TextureSlot);
-    glBindTexture(GL_TEXTURE_2D, m_TextureId);
+    glBindTexture(GL_TEXTURE_2D, RendererId);
 }
 
-void Texture::Unbind() const
+void Texture2D::Unbind() const
 {
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 
-void Texture::SetTextureSlot(uint32_t slotId)
+void Texture2D::SetTextureSlot(uint32_t slotId)
 {
     ASSERT((slotId + GL_TEXTURE0) <= (GL_TEXTURE31), "GL texture slot out of range");
     m_TextureSlot = GL_TEXTURE0 + slotId;
 }
 
-void Texture::SetWrapMode(WrapMode wrapMode)
+void Texture2D::SetWrapMode(WrapMode wrapMode)
 {
-    // Texture MUST be bound!
+    // Texture2D MUST be bound!
     const int glWrapMode = GetGLWrapMode(wrapMode);
 
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, glWrapMode);
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, glWrapMode);
 }
 
-void Texture::Destroy()
+void Texture2D::Destroy()
 {
-    Renderer::DeleteTexture(*this);
+    if(RendererId != 0)
+    {
+        Renderer::DeleteTexture(*this);
+        RendererId = 0;
+    }
 }
 
-Ref<Image> Texture::RenderToImage() const
+Ref<Image> Texture2D::RenderToImage() const
 {
-    ASSERT(m_TextureId != 0, "Texture not initialized");
+    ASSERT(RendererId != 0, "Texture2D not initialized");
     ASSERT(m_Params.DataType != DataType::FLOAT, "Can only render 8-bit depth textures");
 
     size_t imgSize = m_Params.Width * m_Params.Height * sizeof(uint8_t) * 3;
     void* pixelBuffer = calloc(imgSize, sizeof(uint8_t));
 
     glPixelStorei(GL_PACK_ALIGNMENT, 1);
-    glGetTextureImage(m_TextureId, 0, GetGLFormat(m_Params.Format), GetGLDataType(m_Params.DataType), (GLsizei)imgSize, pixelBuffer);
+    glGetTextureImage(RendererId, 0, GetGLFormat(m_Params.Format), GetGLDataType(m_Params.DataType), (GLsizei)imgSize, pixelBuffer);
 
     PixelBuffer imgbuffer = (PixelBuffer)pixelBuffer;
 
     return Ref<Image>(Image::Acquire(m_Params.Width, m_Params.Height, pixelBuffer));
 }
 
-Texture::Texture(const Texture::Params& textureParams)
+Texture2D::Texture2D(const Texture2D::Params& textureParams)
     : Resource(StringId::NONE)
-    , m_TextureId(0)
     , m_TextureSlot(GL_TEXTURE0)
     , m_Params(textureParams)
 {
 }
 
-Texture::Texture(uint16_t width, uint16_t height, Format format, DataType type, WrapMode wrapMode)
+Texture2D::Texture2D(uint16_t width, uint16_t height, Format format, DataType type, WrapMode wrapMode)
     : Resource(StringId::NONE)
-    , m_TextureId(0)
     , m_TextureSlot(GL_TEXTURE0)
 {
     m_Params.Width = width;
@@ -217,7 +216,7 @@ Texture::Texture(uint16_t width, uint16_t height, Format format, DataType type, 
     m_Params.WrapMode = wrapMode;
 }
 
-void Texture::Rebuild()
+void Texture2D::Rebuild()
 {
     // 6408 for RGBA
     const int format    = GetGLFormat(m_Params.Format);
@@ -226,10 +225,10 @@ void Texture::Rebuild()
 
     Vct::Renderer& renderer = Vct::Renderer::Get();
 
-    renderer.GenerateTextureAsync(m_TextureId, m_Image->GetData(), m_Image->GetWidth(), m_Image->GetHeight(), format, type, wrapMode);
+    renderer.GenerateTextureAsync(RendererId, m_Image->GetData(), m_Image->GetWidth(), m_Image->GetHeight(), format, type, wrapMode);
 }
 
-bool Texture::Load(const void* rawBinary, size_t bytes)
+bool Texture2D::Load(const void* rawBinary, size_t bytes)
 {
     ImageFormat format = Image::GetImageFormat(GetPath());
     m_Image.reset(new Image(rawBinary, bytes, format));
@@ -240,11 +239,11 @@ bool Texture::Load(const void* rawBinary, size_t bytes)
     return true;
 }
 
-void Texture::Unload()
+void Texture2D::Unload()
 {
     Vct::Renderer& renderer = Vct::Renderer::Get();
 
-    renderer.DeleteTextureAsync(m_TextureId);
+    renderer.DeleteTextureAsync(RendererId);
 
     m_Image.release();
 }

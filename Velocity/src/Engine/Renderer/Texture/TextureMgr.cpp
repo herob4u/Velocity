@@ -1,12 +1,12 @@
 #include "vctPCH.h"
 #include "TextureMgr.h"
 
-#include "Texture.h"
+#include "Texture2D.h"
 
 Resource* TextureMgr::CreateResource(const Path& resPath)
 {
     // @TODO: Parse extension and store format hint for proper loading here
-    return new Vct::Texture(resPath);
+    return new Vct::Texture2D(resPath);
 }
 
 void TextureMgr::DestroyResource(Resource& res)
