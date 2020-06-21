@@ -14,40 +14,6 @@ namespace Vct
     public:
         friend class Renderer;
 
-        enum class Format : uint8_t
-        {
-            GREYSCALE,
-            RG,
-            RGB,
-            RGBA,
-            FLOAT,
-            DEPTH_STENCIL
-        };
-
-        enum class DataType : uint8_t
-        {
-            UNSIGNED_BYTE,
-            FLOAT,
-            INT,
-            DEPTH_STENCIL
-        };
-
-        enum WrapMode : uint8_t
-        {
-            REPEAT,
-            CLAMP,
-            MIRROR
-        };
-
-        struct Params
-        {
-            uint16_t Width = 256;
-            uint16_t Height = 256;
-            Texture2D::Format Format = Texture2D::Format::RGBA;
-            Texture2D::DataType DataType = Texture2D::DataType::UNSIGNED_BYTE;
-            Texture2D::WrapMode WrapMode = Texture2D::WrapMode::REPEAT;
-        };
-
         static Texture2D* Allocate(uint16_t width, uint16_t height, Format format, DataType type, WrapMode wrapMode = WrapMode::REPEAT);
         static Texture2D* Allocate(const Texture2D::Params& Params);
 

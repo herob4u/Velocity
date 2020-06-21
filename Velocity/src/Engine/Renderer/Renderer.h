@@ -14,6 +14,8 @@ namespace Vct
 
         void BeginScene(const Camera& camera);
         void EndScene();
+        
+        void RenderCubemap();
 
         void GenerateTextureAsync(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode);
         void DeleteTextureAsync(uint32_t& texId);
@@ -33,6 +35,8 @@ namespace Vct
     private:
         RenderCmdQueue m_TextureCmdQueue;
         RenderCmdQueue m_BufferCmdQueue;
+
+        std::unique_ptr<Framebuffer> m_CubemapBuffer;
 
         std::thread m_WorkerThread;
         bool m_Finished;

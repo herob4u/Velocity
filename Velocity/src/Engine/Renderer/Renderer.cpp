@@ -1,10 +1,13 @@
 #include "vctPCH.h"
 
 #include "Renderer.h"
-
 #include "Texture/Texture2D.h"
+#include "Texture/Cubemap.h"
+
+#include "Engine/Core/Application.h"
 
 #include "glad/glad.h"
+#include "glm/ext/matrix_transform.hpp"
 
 using namespace Vct;
 
@@ -12,6 +15,15 @@ Renderer::Renderer()
     : m_Finished(false)
 {
     //m_WorkerThread = std::thread(&Renderer::ProcessCmds, this);
+
+    const Application& app = Application::Get();
+
+    FramebufferParams fbParams;
+    fbParams.Width = app.GetWindow().GetWidth();
+    fbParams.Height = app.GetWindow().GetHeight();
+    fbParams.TextureTarget.bIsCubemap = true;
+
+    m_CubemapBuffer = std::make_unique<Framebuffer>(Framebuffer::CreateColorBuffer(0, fbParams));
 }
 
 Renderer::~Renderer()
@@ -28,6 +40,39 @@ void Renderer::BeginScene(const Camera& camera)
 
 void Renderer::EndScene()
 {
+}
+
+void Renderer::RenderCubemap()
+{
+    // Get cubemap shader from shader mgr
+
+    // static array of camera directions
+    static const glm::vec3 UP(0.f, 1.f, 0.f);
+    static const glm::vec3 RIGHT(1.f, 0.f, 0.f);
+    static const glm::vec3 FORWARD(0.f, 0.f, 1.f);
+    static const glm::vec3 ZERO(0.f);
+    static glm::mat4 views[6] =
+    {
+        glm::lookAt(ZERO, RIGHT, -UP),
+        glm::lookAt(ZERO, -RIGHT, -UP),
+        glm::lookAt(ZERO, UP, FORWARD),
+        glm::lookAt(ZERO, -UP, -FORWARD),
+        glm::lookAt(ZERO, FORWARD, -UP),
+        glm::lookAt(ZERO, -FORWARD, -UP)
+    };
+
+    // Loop and upload camera uniforms to shader, and render 1x1 cube
+    Bind(*m_CubemapBuffer.get());
+    for(int i = 0; i < 6; i++)
+    {
+        // Set view uniform here ...
+
+        m_CubemapBuffer->SetCubemapTargetFace(static_cast<CubemapFace>(i));
+
+        // Render here...
+    }
+
+    Unbind(*m_CubemapBuffer.get())
 }
 
 void Renderer::GenerateTextureAsync(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode)
