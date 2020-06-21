@@ -37,6 +37,19 @@ namespace Vct
             Format Format = Format::RGBA;
             DataType DataType = DataType::UNSIGNED_BYTE;
             WrapMode WrapMode = WrapMode::REPEAT;
+
+            Params()
+            {
+            }
+
+            Params(uint16_t width, uint16_t height, Texture::Format format, Texture::DataType dataType, Texture::WrapMode wrapMode)
+                : Width(width)
+                , Height(height)
+                , Format(format)
+                , DataType(dataType)
+                , WrapMode(wrapMode)
+            {
+            }
         };
 
         Texture()

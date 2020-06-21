@@ -61,6 +61,12 @@ void Framebuffer::AllocateTexture(const TextureTargetParams& textureParams, Type
         height  = m_Params.Height;
     }
 
+    if(textureParams.bIsCubemap && (width != height))
+    {
+        ASSERT(false, "Cubemaps only support square dimensions");
+        return;
+    }
+
     Texture::Format format;
     Texture::DataType dataType;
 

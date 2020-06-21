@@ -56,6 +56,7 @@ Cubemap* Cubemap::Allocate(uint16_t width, uint16_t height, Format format, DataT
 
     for(int i = 0; i < CubemapFace::MAX_VAL; i++)
     {
+        cubemap->m_Params[i] = Texture::Params(width, height, format, dataType, wrapMode);
         glTexImage2D(GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, 0, glFormat, width, height, 0, glFormat, glType, nullptr);
     }
 

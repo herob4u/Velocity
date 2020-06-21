@@ -62,9 +62,9 @@ Renderer::Renderer()
     const Application& app = Application::Get();
 
     FramebufferParams fbParams;
-    fbParams.Width = app.GetWindow().GetWidth();
-    fbParams.Height = app.GetWindow().GetHeight();
-    fbParams.TextureTarget.bIsCubemap = false;
+    fbParams.Width = 512;
+    fbParams.Height = 512;
+    fbParams.TextureTarget.bIsCubemap = true;
 
     m_CubemapBuffer.reset(Framebuffer::CreateColorBuffer(0, fbParams));
 }
@@ -180,18 +180,19 @@ void Renderer::GenerateFramebuffer(Framebuffer& fb)
 
     if(fb.m_Params.TextureTarget.bIsCubemap)
     {
-        for(int i = 0; i < CubemapFace::MAX_VAL; i++)
-        {
-            glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, fb.m_Texture->GetRendererId(), 0);
-        }
+        glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X, fb.m_Texture->GetRendererId(), 0);
     }
     else
     {
         glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_2D, fb.m_Texture->GetRendererId(), 0);
     }
 
-    if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        ASSERT(false, "Framebuffer incomplete {0}");
+    GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+    if(status != GL_FRAMEBUFFER_COMPLETE)
+    {
+        VCT_ERROR("Framebuffer incomplete: {0}", status);
+        ASSERT(false, "Framebuffer incomplete", (int)glCheckFramebufferStatus(GL_FRAMEBUFFER));
+    }
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
