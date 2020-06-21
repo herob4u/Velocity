@@ -92,11 +92,17 @@ workspace "Velocity"
       	pchsource "Velocity/src/vctPCH.cpp"
 
 		-- Assets Directory
-		currentDir = os.getcwd()
-		assetDir = currentDir.."/Assets/"
-		shaderDir = currentDir.."/Velocity/src/Engine/Renderer/Shaders/"
+		currentDir	= os.getcwd()
+		assetDir	= currentDir.."/Assets/"
+		--shaderDir	= currentDir.."/Velocity/src/Engine/Renderer/Shaders/"
+		shaderDir	= currentDir.."/Content/Shaders/"
+		contentDir	= currentDir.."/Content/";
+
 		os.mkdir(assetDir)
-		defines {"ASSET_DIR=".."\""..assetDir.."\"", "SHADER_DIR=".."\""..shaderDir.."\""}
+		defines {"ASSET_DIR=".."\""..assetDir.."\"", 
+				"SHADER_DIR=".."\""..shaderDir.."\"", 
+				"ROOT_DIR=".."\""..currentDir.."\"",
+				"CONTENT_DIR=".."\""..contentDir.."\""}
 
 		files
 		{

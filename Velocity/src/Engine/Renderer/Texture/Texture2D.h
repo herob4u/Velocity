@@ -3,10 +3,10 @@
 #include "Texture.h"
 #include "Engine/Resources/Resource.h"
 
-static Resource::Type ResType_Texture("texture");
-
 namespace Vct
 {
+    static Resource::Type ResType_Texture("texture");
+
     class Image;
 
     class Texture2D : public Resource, public Texture

@@ -106,7 +106,7 @@ protected:
     }
 };
 
-#include "Engine/Renderer/Texture/TextureMgr.h"
+#include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Texture/Texture2D.h"
 #include "Engine/Renderer/Mesh/Model.h"
 
@@ -117,14 +117,14 @@ int main(int argc, char** argv)
     VCT_INFO("MAIN!");
 
     FileMgr& mgr = FileMgr::Get();
-    mgr.SetBasePath(ASSET_DIR);
+    //mgr.SetBasePath(ASSET_DIR);
+    mgr.SetBasePath(CONTENT_DIR);
 
     // Register all resource managers by type
     ResourceMgrRegistry::Get().Register(TextResourceType, new TextResourceMgr());
-    ResourceMgrRegistry::Get().Register(ResType_Texture, new TextureMgr());
-    ResourceMgrRegistry::Get().Register(ResType_Model, new Vct::ModelMgr());
 
     Vct::Application app = Vct::Application();
+    Vct::Renderer::Get(); // This is placeholder BS. Currently the renderer is responsible for intializing upon construction... this needs to change
     {
         // This should fail!
         TResourcePtr<Vct::Texture2D> testTexture(mgr.GetAbsPath("Pinup_A.tga"));

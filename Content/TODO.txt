@@ -1,0 +1,9 @@
+- Subimage extraction
+- Cubemap - 6 independent images, one texture
+- Skybox  - special cubemap that can extract 6 independent images, forwards to cubemap, and
+  contains draw information.
+- CameraController!!!!!
+- Redesign ShaderProgram, doesn't fit nicely with Resource system.
+- Specialize ShaderMgr to handle the loading of the .vs and .fs files. Right now, can only load one.
+- Move ResourceMgrs registration away from Renderer constructor to decouple dependencies. Must be done
+as part of a global init.

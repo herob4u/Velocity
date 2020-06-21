@@ -12,6 +12,7 @@ class ShaderProgram : public Resource {
 public:
     static std::string getShaderFile(const char* file);
 
+    ShaderProgram(const Path& path);
     ShaderProgram();
 
     ~ShaderProgram();

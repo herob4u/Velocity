@@ -118,6 +118,15 @@ public:
     void Shutdown();
     ResourceMgr* GetMgr(const Resource::Type& type) const;
 
+    template <typename T>
+    T* GetResource(const Path& resPath)
+    {
+        ResourceMgr* mgr = GetMgr(T::GetStaticType());
+        ASSERT(mgr, "Cannot load resource, no associated resource manager");
+
+        return mgr->GetResource<T>(resPath);
+    }
+
     static ResourceMgrRegistry& Get();
 private:
     std::unordered_map<Resource::Type, ResourceMgr*> m_ResourceMgrs;

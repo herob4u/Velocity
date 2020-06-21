@@ -31,6 +31,11 @@ std::string ShaderProgram::getShaderFile(const char* file)
     return std::string(SHADER_DIR) + (file);
 }
 
+ShaderProgram::ShaderProgram(const Path& path)
+    : Resource(path)
+{
+}
+
 //------------------------------------------------------------------------------------
 ShaderProgram::ShaderProgram()
         : programObject(0),

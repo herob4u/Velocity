@@ -29,6 +29,9 @@ namespace Vct
 
         static Renderer& Get();
     private:
+        // Register all resource mgrs associated with rendering resources.
+        void RegisterMgrs();
+
         // Executed on worker thread. Currently unused because we want all async calls to be deferred commands that are flushed before
         // the scene begins rendering. It is exclusively used for resource loading so far.
         void ProcessCmds();

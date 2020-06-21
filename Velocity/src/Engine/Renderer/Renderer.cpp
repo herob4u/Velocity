@@ -1,29 +1,72 @@
 #include "vctPCH.h"
 
 #include "Renderer.h"
+#include "ShaderProgram.h"
+#include "Material.h"
+
 #include "Texture/Texture2D.h"
 #include "Texture/Cubemap.h"
+#include "Mesh/Model.h"
 
 #include "Engine/Core/Application.h"
+
+#include "Engine/Resources/ResourceMgr.h"
 
 #include "glad/glad.h"
 #include "glm/ext/matrix_transform.hpp"
 
 using namespace Vct;
 
+template <typename ResType>
+class RenderResourceMgr : public ResourceMgr
+{
+    virtual Resource* CreateResource(const Path& resPath) override
+    {
+        return new ResType(resPath);
+    }
+
+    virtual void DestroyResource(Resource& res) override
+    {
+        ASSERT(!res.IsLoading(), "Cannot destroy while loading resource");
+
+        // Placeholder code - this will spike the performance, but it should never occur to begin with
+        while(res.IsLoading()) {}
+
+        if(res.IsLoaded())
+        {
+            Unload(res.GetPath());
+        }
+
+        ASSERT(res.GetRefCount() == 0, "Resource still in use!");
+        auto found = m_ResourceList.find(res.GetPath().GetPathId());
+        if(found != m_ResourceList.end())
+        {
+            Resource* res = found->second;
+            if(res)
+            {
+                delete res;
+                res = nullptr;
+            }
+
+            m_ResourceList.erase(found);
+        }
+    }
+};
+
 Renderer::Renderer()
     : m_Finished(false)
 {
     //m_WorkerThread = std::thread(&Renderer::ProcessCmds, this);
+    RegisterMgrs();
 
     const Application& app = Application::Get();
 
     FramebufferParams fbParams;
     fbParams.Width = app.GetWindow().GetWidth();
     fbParams.Height = app.GetWindow().GetHeight();
-    fbParams.TextureTarget.bIsCubemap = true;
+    fbParams.TextureTarget.bIsCubemap = false;
 
-    m_CubemapBuffer = std::make_unique<Framebuffer>(Framebuffer::CreateColorBuffer(0, fbParams));
+    m_CubemapBuffer.reset(Framebuffer::CreateColorBuffer(0, fbParams));
 }
 
 Renderer::~Renderer()
@@ -45,6 +88,8 @@ void Renderer::EndScene()
 void Renderer::RenderCubemap()
 {
     // Get cubemap shader from shader mgr
+    ResourceMgrRegistry& registry = ResourceMgrRegistry::Get();
+    const ShaderProgram* shader = registry.GetResource<ShaderProgram>("Shaders/Skybox.vs");
 
     // static array of camera directions
     static const glm::vec3 UP(0.f, 1.f, 0.f);
@@ -72,7 +117,7 @@ void Renderer::RenderCubemap()
         // Render here...
     }
 
-    Unbind(*m_CubemapBuffer.get())
+    Unbind(*m_CubemapBuffer.get());
 }
 
 void Renderer::GenerateTextureAsync(uint32_t& texId, const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode)
@@ -133,10 +178,20 @@ void Renderer::GenerateFramebuffer(Framebuffer& fb)
 
     ASSERT(glAttachment != 0, "Invalid Framebuffer attachment");
 
-    glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_2D, fb.m_Texture->GetRendererId(), 0);
+    if(fb.m_Params.TextureTarget.bIsCubemap)
+    {
+        for(int i = 0; i < CubemapFace::MAX_VAL; i++)
+        {
+            glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_CUBE_MAP_POSITIVE_X + i, fb.m_Texture->GetRendererId(), 0);
+        }
+    }
+    else
+    {
+        glFramebufferTexture2D(GL_FRAMEBUFFER, glAttachment, GL_TEXTURE_2D, fb.m_Texture->GetRendererId(), 0);
+    }
 
     if(glCheckFramebufferStatus(GL_FRAMEBUFFER) != GL_FRAMEBUFFER_COMPLETE)
-        ASSERT(false, "Framebuffer incomplete");
+        ASSERT(false, "Framebuffer incomplete {0}");
 
     glBindFramebuffer(GL_FRAMEBUFFER, 0);
 }
@@ -161,6 +216,16 @@ Renderer& Renderer::Get()
 {
     static Renderer self;
     return self;
+}
+
+void Renderer::RegisterMgrs()
+{
+    ResourceMgrRegistry& registry = ResourceMgrRegistry::Get();
+
+    registry.Register(ShaderProgram::GetStaticType(), new RenderResourceMgr<ShaderProgram>());
+    registry.Register(Texture2D::GetStaticType(), new RenderResourceMgr<Texture2D>());
+    registry.Register(Material::GetStaticType(), new RenderResourceMgr<Material>());
+    registry.Register(Model::GetStaticType(), new RenderResourceMgr<Model>());
 }
 
 void Renderer::ProcessCmds()

@@ -5,7 +5,6 @@
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Texture/Image.h"
 #include "Engine/Renderer/Texture/Texture2D.h"
-#include "Engine/Renderer/Texture/TextureMgr.h"
 #include "Engine/IO/FileMgr.h"
 
 #include "Engine/Renderer/Mesh/Model.h"
@@ -55,7 +54,6 @@ void ViewportLayer::OnAttached()
 
     RenderCommands::ClearBuffers();
     RenderCommands::SetClearColor(0.2f, 0.2f, 0.2f);
-    //VCT_TRACE("Asset Dir: {0}", ASSET_DIR);
 
     while(!m_BackgroundTexture.IsValid()) {}
 

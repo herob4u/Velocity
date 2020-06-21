@@ -8,6 +8,8 @@
 
 namespace Vct
 {
+    static const Resource::Type ResType_Material("material");
+
     class Texture2D;
 
     class Material : public Resource
@@ -18,6 +20,13 @@ namespace Vct
 
         FORCEINLINE uint32_t GetId() const { return m_Id; }
         FORCEINLINE const ShaderProgram* GetShader() const { return m_Shader.Get(); }
+
+        RES_TYPE(ResType_Material);
+
+    protected:
+        // Resource Interface
+        virtual bool Load(const void* rawBinary, size_t bytes) override { return false; }
+        virtual void Unload() override { }
     private:
         TResourcePtr<ShaderProgram> m_Shader;
         uint32_t m_Id;
@@ -37,7 +46,6 @@ namespace Vct
         void SetMetallicMap(const Texture2D* metallicMap);
         void SetRoughnessMap(const Texture2D* roughnessMap);
     protected:
-
     private:
     };
 }
