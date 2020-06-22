@@ -17,7 +17,7 @@ enum PathError
 class Path
 {
 public:
-    static PathError GetExtension(const std::string& path, std::string& outExtension);
+    static PathError GetExtension(const std::string& path, std::string& outExtension, bool bWithDelimeter = false);
     static PathError GetDirectory(const std::string& path, std::string& outDirectory);
     static PathError GetBaseName(const std::string& path, std::string& outBaseName);
     static PathError GetBaseNameExtension(const std::string& path, std::string& outBaseNameExtension);
@@ -31,7 +31,7 @@ public:
     Path operator+(const Path& Other) const;
     Path& operator+=(const Path& Other);
 
-    PathError GetExtension(std::string& outExtension) const;
+    PathError GetExtension(std::string& outExtension, bool bWithDelimeter = false) const;
     PathError GetDirectory(std::string& outDirectory) const;
     PathError GetBaseName(std::string& outBaseName) const;
     PathError GetBaseNameExtension(std::string& outBaseNameExtension) const;

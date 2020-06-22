@@ -3,12 +3,14 @@
 
 /* Experimental */
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Renderer/Shader.h"
 #include "Engine/Renderer/Texture/Image.h"
 #include "Engine/Renderer/Texture/Texture2D.h"
 #include "Engine/IO/FileMgr.h"
 
 #include "Engine/Renderer/Mesh/Model.h"
 #include "Engine/Core/Application.h"
+#include "Engine/Engine.h"
 
 using namespace Vct;
 
@@ -45,6 +47,9 @@ ViewportLayer::ViewportLayer()
     m_TexturedQuadShader->attachVertexShader(vertShader.c_str());
     m_TexturedQuadShader->attachFragmentShader(fragShader.c_str());
     m_TexturedQuadShader->link();
+
+    Shader skyboxShader = Shader("Skybox");
+    gEngine->GetShaderCache().SaveCache();
 }
 
 void ViewportLayer::OnAttached()
@@ -80,6 +85,8 @@ void ViewportLayer::OnUpdate(float dt)
     renderer.BeginScene(m_Camera);
         RenderCommands::DrawImage(m_TexturedQuadShader, m_BackgroundTexture.Get());
     renderer.EndScene();
+
+    Shader skyboxShader = Shader("Shaders/Skybox");
 }
 
 void ViewportLayer::OnDetached()

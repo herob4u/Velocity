@@ -9,9 +9,19 @@ using namespace Vct;
 static const std::string SHADER_CACHE_EXTENSION = "scf";
 static const StringId    SHADER_CACHE_EXTENSION_ID = ".scf";
 
+ShaderBinary ShaderBinary::Null = ShaderBinary(nullptr, 0);
+
 ShaderCache::ShaderCache(const Path& cacheFolder)
     : m_CacheFolder(cacheFolder)
 {
+    FileMgr& mgr = FileMgr::Get();
+    
+    const char* dir = m_CacheFolder.GetFullPathRef();
+
+    if(!mgr.DirectoryExists(dir))
+    {
+        mgr.MakeDir(dir);
+    }
 }
 
 void ShaderCache::CacheProgram(const Shader& shader)
@@ -21,7 +31,7 @@ void ShaderCache::CacheProgram(const Shader& shader)
     void* binary = nullptr;
     size_t bytes = 0;
 
-    if(shader.GetBinary(binary, bytes))
+    if(shader.GetBinary(&binary, bytes))
     {
         // Update the existing cache, or create a new entry if non-existent.
         auto found = m_BinaryCache.find(shaderName);
@@ -68,6 +78,7 @@ void ShaderCache::SaveCacheFile(const StringId& shaderName, const void* data, si
         {
             VCT_WARN("Saving cache file failed: Write incomplete");
         }
+        file.Close();
     }
     else
     {

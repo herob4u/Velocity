@@ -4,14 +4,17 @@
 static const std::string INVALID_FILE_TOKENS = "\"' ,/.:|&!~\n\r\t@#(){}[]=;^%$`";
 static const std::string INVALID_DIRECTORY_TOKENS = "\"' ,|&!~\n\r\t@#(){}[]=;^%$`";
 
-PathError Path::GetExtension(const std::string& path, std::string& outExtension)
+PathError Path::GetExtension(const std::string& path, std::string& outExtension, bool bWithDelimeter)
 {
     ASSERT(path.length(), "Expected non-empty path string");
     for(int i = (int)path.size() - 1; i >= 0; i--)
     {
         if(path[i] == '.')
         {
-            outExtension.assign(&path[i+1], path.size() - (i+1));
+            if(!bWithDelimeter)
+                outExtension.assign(&path[i+1], path.size() - (i+1));
+            else
+                outExtension.assign(&path[i], path.size() - (i));
             return PathError::NONE;
         }
     }
@@ -60,7 +63,7 @@ PathError Path::GetBaseName(const std::string& path, std::string& outBaseName)
         return PathError::INVALID_PATH_CHARS;
     }
 
-    outBaseName.assign(&path[begin], &path[end]);
+    outBaseName.assign(&path[begin], &path[end+1]);
     return PathError::NONE;
 }
 
@@ -137,10 +140,10 @@ Path& Path::operator+=(const Path& Other)
     // TODO: insert return statement here
 }
 
-PathError Path::GetExtension(std::string& outExtension) const
+PathError Path::GetExtension(std::string& outExtension, bool bWithDelimeter) const
 {
     std::string path = m_PathId.ToString();
-    return Path::GetExtension(path, outExtension);
+    return Path::GetExtension(path, outExtension, bWithDelimeter);
 }
 
 PathError Path::GetDirectory(std::string& outDirectory) const

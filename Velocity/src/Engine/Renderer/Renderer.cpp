@@ -12,6 +12,8 @@
 
 #include "Engine/Resources/ResourceMgr.h"
 
+#include "Engine/Engine.h"
+
 #include "glad/glad.h"
 #include "glm/ext/matrix_transform.hpp"
 
@@ -56,10 +58,17 @@ class RenderResourceMgr : public ResourceMgr
 Renderer::Renderer()
     : m_Finished(false)
 {
-    //m_WorkerThread = std::thread(&Renderer::ProcessCmds, this);
-    RegisterMgrs();
+}
 
-    const Application& app = Application::Get();
+Renderer::~Renderer()
+{
+    //m_Finished = true;
+    //m_WorkerThread.join();
+}
+
+void Renderer::Init()
+{
+    RegisterMgrs();
 
     FramebufferParams fbParams;
     fbParams.Width = 512;
@@ -69,10 +78,8 @@ Renderer::Renderer()
     m_CubemapBuffer.reset(Framebuffer::CreateColorBuffer(0, fbParams));
 }
 
-Renderer::~Renderer()
+void Renderer::Shutdown()
 {
-    //m_Finished = true;
-    //m_WorkerThread.join();
 }
 
 void Renderer::BeginScene(const Camera& camera)
@@ -215,15 +222,18 @@ void Renderer::Unbind(Framebuffer&)
 
 Renderer& Renderer::Get()
 {
+/*
     static Renderer self;
     return self;
+*/
+    return gEngine->GetRenderer();
 }
 
 void Renderer::RegisterMgrs()
 {
     ResourceMgrRegistry& registry = ResourceMgrRegistry::Get();
 
-    registry.Register(ShaderProgram::GetStaticType(), new RenderResourceMgr<ShaderProgram>());
+    registry.Register(ShaderProgram::GetStaticType(), new RenderResourceMgr<ShaderSource>());
     registry.Register(Texture2D::GetStaticType(), new RenderResourceMgr<Texture2D>());
     registry.Register(Material::GetStaticType(), new RenderResourceMgr<Material>());
     registry.Register(Model::GetStaticType(), new RenderResourceMgr<Model>());

@@ -1,7 +1,7 @@
 #version 330
 
-in (layout=0) vec3 a_Position;
-in (layout=1) vec3 a_UVW;
+in layout(location=0) vec3 a_Position;
+in layout(location=1) vec3 a_UVW;
 
 uniform mat4 Projection;
 uniform mat4 View;

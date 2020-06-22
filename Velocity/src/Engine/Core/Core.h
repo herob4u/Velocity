@@ -40,4 +40,6 @@ namespace Vct
     {
         return std::make_shared<T>(std::forward<Args>(args)...);
     }
+
+    extern class Engine* gEngine;
 }

@@ -12,6 +12,9 @@ namespace Vct
         Renderer();
         ~Renderer();
 
+        void Init();
+        void Shutdown();
+
         void BeginScene(const Camera& camera);
         void EndScene();
         

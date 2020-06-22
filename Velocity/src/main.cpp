@@ -1,4 +1,5 @@
 #include "vctPCH.h"
+#include "Engine/Engine.h"
 #include "Engine/Core/Application.h"
 #include "Engine/Core/Log.h"
 
@@ -10,6 +11,8 @@
 
 #include <chrono>
 #include <omp.h>
+
+Vct::Engine* Vct::gEngine = new Vct::VelocityEngine();
 
 static Resource::Type TextResourceType("text");
 
@@ -116,19 +119,19 @@ int main(int argc, char** argv)
     Vct::Log::Init();
 
     VCT_INFO("MAIN!");
+    
+    // Initialize the OpenGL context
+    Vct::Application app = Vct::Application();
+
+    // Initialize the core engine - this sets up the renderer, resource mgrs, etc for use
+    Vct::gEngine->Init();
 
     FileMgr& mgr = FileMgr::Get();
-    //mgr.SetBasePath(ASSET_DIR);
     mgr.SetBasePath(CONTENT_DIR);
-
-    Vct::ShaderCache shaderCache(CONTENT_DIR);
-    shaderCache.LoadCache();
 
     // Register all resource managers by type
     ResourceMgrRegistry::Get().Register(TextResourceType, new TextResourceMgr());
-
-    Vct::Application app = Vct::Application();
-    Vct::Renderer::Get(); // This is placeholder BS. Currently the renderer is responsible for intializing upon construction... this needs to change
+    //Vct::Renderer::Get(); // This is placeholder BS. Currently the renderer is responsible for intializing upon construction... this needs to change
     {
         // This should fail!
         /*

@@ -7,6 +7,7 @@
 #include <chrono>
 
 #include "dirent.h"
+#include <direct.h>
 
 FileMgr::FileIOTask::FileIOTask(FileMgr& owner)
     : m_FileMgr(owner)
@@ -222,6 +223,11 @@ bool FileMgr::Exists(const char* filepath)
     return CheckPermission(filepath, "r");
 }
 
+bool FileMgr::DirectoryExists(const char* directory)
+{
+    return (opendir(directory) != nullptr);
+}
+
 bool FileMgr::Delete(const char* filepath)
 {
     auto err = remove(filepath);
@@ -269,6 +275,11 @@ void FileMgr::GetFiles(const char* inDirectory, std::vector<std::string>& outFil
             }
         }
     }
+}
+
+bool FileMgr::MakeDir(const char* directory)
+{
+    return (_mkdir(directory) == 0);
 }
 
 void FileMgr::Cancel(FileHandle& handle)

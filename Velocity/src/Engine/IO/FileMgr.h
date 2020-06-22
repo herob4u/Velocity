@@ -58,11 +58,13 @@ public:
     bool Move(const char* from, const char* to);
     bool Copy(const char* from, const char* to);
     bool Exists(const char* filepath);
+    bool DirectoryExists(const char* directory);
     bool Delete(const char* filepath);
     
     void GetFiles(const char* inDirectory, std::vector<std::string>& outFiles) const;
     void GetFiles(const char* inDirectory, std::vector<std::string>& outFiles, const std::string& extension) const;
-
+    bool MakeDir(const char* directory);
+    
     // Async Operations
     FileHandle LoadAsync(const Path& inputFilePath, FileLoadedDelegate onFileLoaded);
     void Cancel(FileHandle& handle);
