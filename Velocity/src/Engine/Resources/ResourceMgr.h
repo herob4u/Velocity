@@ -5,6 +5,12 @@
 
 using OnResourcesLoaded = std::function<void(const std::vector<Resource*>&)>;
 
+enum LoadPriority : uint8_t
+{
+    DEFAULT,
+    HIGH
+};
+
 /*  The ResourceStreamer accepts a list of assets to batch stream and load from disk 
 *   Loading is deferred to the ResourceLoader to synchronize the loading of dependencies
 *   while avoiding race conditions when modifying resource internal states.
@@ -24,7 +30,7 @@ struct ResourceStreamer
     };
 
     ResourceStreamer(ResourceLoader& resourceLoader);
-    void EnqueueResources(const std::vector<Resource*>& resources, OnResourcesLoaded cb);
+    void EnqueueResources(const std::vector<Resource*>& resources, OnResourcesLoaded cb, LoadPriority priority = LoadPriority::DEFAULT);
 
 protected:
     void Execute();

@@ -116,7 +116,7 @@ OutputFileStream::~OutputFileStream()
 
 bool OutputFileStream::Open(const char* filepath)
 {
-    auto err = fopen_s(&m_Handle, filepath, "w");
+    auto err = fopen_s(&m_Handle, filepath, "wb");
     
     if(err != 0)
     {
@@ -148,4 +148,9 @@ bool OutputFileStream::Write(const void* data, size_t numBytes)
     }
 
     return (fwrite(data, sizeof(char), numBytes, m_Handle) == numBytes);
+}
+
+OutputFileStream::operator bool() const
+{
+    return (m_Handle && feof(m_Handle) == 0);
 }

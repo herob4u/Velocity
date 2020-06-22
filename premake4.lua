@@ -12,6 +12,7 @@ workspace "Velocity"
 		"Velocity/vendor/imgui",
 		"Velocity/vendor/glm",
 		"Velocity/vendor/spdlog/include",
+		"Velocity/vendor/dirent/include",
 
 		"Velocity/src"
 	}

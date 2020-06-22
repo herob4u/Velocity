@@ -1,10 +1,12 @@
 #include "vctPCH.h"
 #include "FileMgr.h"
 
+#include "Engine/Utils/StringUtils.h"
+
 #include <fstream>
 #include <chrono>
 
-
+#include "dirent.h"
 
 FileMgr::FileIOTask::FileIOTask(FileMgr& owner)
     : m_FileMgr(owner)
@@ -87,113 +89,6 @@ void FileMgr::FileIOTask::Stop()
 {
     m_Finished = true;
 }
-
-#if 0
-bool FileHandle::IsLoaded() const
-{
-    return false;
-}
-
-bool FileHandle::CanRead() const
-{
-    return CheckPermission("r");
-}
-
-bool FileHandle::CanWrite() const
-{
-    return CheckPermission("w");
-}
-
-FileError FileHandle::Load(FileContent& outContent)
-{
-    FILE* file;
-    auto err = fopen_s(&file, FilePath.GetFullPathRef(), "rb");
-    
-    if(!err)
-    {
-        fseek(file, 0, SEEK_END);
-        size_t numBytes = ftell(file);
-        fseek(file, 0, SEEK_SET);
-
-        if(numBytes == 0)
-            return FileError::FILE_EMPTY;
-
-        char* data = (char*)malloc(sizeof(char) * numBytes + 1);
-
-        fread(data, sizeof(char), numBytes, file);
-        fclose(file);
-
-        // Terminate file with null character
-        data[numBytes] = 0;
-
-        // Update file content with acquired info
-        outContent.Data = data;
-        outContent.NumBytes = numBytes;
-
-        return FileError::NONE;
-    }
-
-    switch(err)
-    {
-        case ENOENT: return FileError::FILE_NOT_FOUND;
-        case EPERM: return FileError::NO_READ_PERMISSION;
-        default: return FileError::IO_FAILED;
-    }
-}
-
-FileError FileHandle::Replace(const FileContent& content)
-{
-    if(content.NumBytes == 0 || content.Data == nullptr)
-        return FileError::WRITEDATA_EMPTY;
-
-    FILE* file;
-    auto err = fopen_s(&file, FilePath.GetFullPathRef(), "wb");
-    
-    if(!err)
-    {
-        size_t written = fwrite(content.Data, sizeof(char), content.NumBytes, file);
-        fclose(file);
-
-        if(written < content.NumBytes)
-            return FileError::INCOMPLETE_WRITE;
-        
-        return FileError::NONE;
-    }
-
-    switch(err)
-    {
-        case ENOENT: return FileError::FILE_NOT_FOUND;
-        case EPERM: return FileError::NO_WRITE_PERMISSION;
-        default: return FileError::IO_FAILED;
-    }
-}
-
-FileError FileHandle::Swap(FileHandle& Other)
-{
-    const char* tmp = tmpnam(nullptr);
-    auto err = rename(Other.FilePath.GetFullPathRef(), FilePath.GetFullPathRef());
-    ASSERT(!err, "Error code {0} when renaming file '{1}'", err, Other.FilePath.GetFullPathRef());
-
-    err = rename(FilePath.GetFullPathRef(), Other.FilePath.GetFullPathRef());
-    ASSERT(!err, "Error code {0} when renaming file '{1}'", err, FilePath.GetFullPathRef());
-
-    return FileError::NONE;
-}
-
-bool FileHandle::CheckPermission(const char* mode) const
-{
-    FILE* file = nullptr;
-    auto err = fopen_s(&file, FilePath.GetFullPathRef(), mode);
-
-    if(!err)
-    {
-        fclose(file);
-        return true;
-    }
-
-    return false;
-}
-#endif
 
 FileMgr::FileMgr()
     : m_Task(*this)
@@ -331,6 +226,49 @@ bool FileMgr::Delete(const char* filepath)
 {
     auto err = remove(filepath);
     return (err == 0);
+}
+
+void FileMgr::GetFiles(const char* inDirectory, std::vector<std::string>& outFiles) const
+{
+    DIR* dir;
+    struct dirent* entry;
+
+    if( (dir = opendir(inDirectory)) != nullptr)
+    {
+        while(entry = readdir(dir))
+        {
+            if(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+
+            outFiles.emplace_back(entry->d_name);
+        }
+    }
+}
+
+void FileMgr::GetFiles(const char* inDirectory, std::vector<std::string>& outFiles, const std::string& extension) const
+{
+    DIR* dir;
+    struct dirent* entry;
+
+    if((dir = opendir(inDirectory)) != nullptr)
+    {
+        while(entry = readdir(dir))
+        {
+            if(strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0)
+                continue;
+
+            // Filter out by extension
+            std::string fileName = entry->d_name;
+            std::string ext(4, 0);
+
+            Path::GetExtension(fileName, ext);
+
+            if(String::Equals(extension, ext, false))
+            {
+                outFiles.emplace_back(entry->d_name);
+            }
+        }
+    }
 }
 
 void FileMgr::Cancel(FileHandle& handle)

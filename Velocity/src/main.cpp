@@ -109,6 +109,7 @@ protected:
 #include "Engine/Renderer/Renderer.h"
 #include "Engine/Renderer/Texture/Texture2D.h"
 #include "Engine/Renderer/Mesh/Model.h"
+#include "Engine/Renderer/ShaderCache.h"
 
 int main(int argc, char** argv)
 {
@@ -120,6 +121,9 @@ int main(int argc, char** argv)
     //mgr.SetBasePath(ASSET_DIR);
     mgr.SetBasePath(CONTENT_DIR);
 
+    Vct::ShaderCache shaderCache(CONTENT_DIR);
+    shaderCache.LoadCache();
+
     // Register all resource managers by type
     ResourceMgrRegistry::Get().Register(TextResourceType, new TextResourceMgr());
 
@@ -127,9 +131,11 @@ int main(int argc, char** argv)
     Vct::Renderer::Get(); // This is placeholder BS. Currently the renderer is responsible for intializing upon construction... this needs to change
     {
         // This should fail!
+        /*
         TResourcePtr<Vct::Texture2D> testTexture(mgr.GetAbsPath("Pinup_A.tga"));
         VCT_INFO(mgr.GetAbsPath("Pinup_A.tga").GetFullPathRef());
         Vct::Texture2D* texture = testTexture.Load();
+        */
 
         TResourcePtr<TextResource> asset1("asset1.txt");
         asset1.Load();

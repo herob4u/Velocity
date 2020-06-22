@@ -51,3 +51,13 @@ private:
 private:
     StringId m_PathId;
 };
+
+namespace std {
+    template <> struct hash<Path>
+    {
+        size_t operator()(const Path& x) const
+        {
+            return hash<StringId>()(x.GetPathId());
+        }
+    };
+}

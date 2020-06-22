@@ -36,6 +36,7 @@ public:
 
     virtual bool Write(const void* data, size_t numBytes) override;
 
+    operator bool() const;
 private:
     FILE* m_Handle;
 };

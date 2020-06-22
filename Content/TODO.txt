@@ -7,3 +7,8 @@
 - Specialize ShaderMgr to handle the loading of the .vs and .fs files. Right now, can only load one.
 - Move ResourceMgrs registration away from Renderer constructor to decouple dependencies. Must be done
 as part of a global init.
+
+- Need an event/delegate system that is polled at the beginning and end of a frame. That way, can
+run callbacks from async threads on main thread.
+
+- Shader Archive to to write binary shader programs, and load them if cached.

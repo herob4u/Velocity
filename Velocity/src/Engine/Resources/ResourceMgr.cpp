@@ -135,10 +135,18 @@ ResourceStreamer::ResourceStreamer(ResourceLoader& resourceLoader)
     m_workThread = std::thread(&ResourceStreamer::Execute, this);
 }
 
-void ResourceStreamer::EnqueueResources(const std::vector<Resource*>& resources, OnResourcesLoaded cb)
+void ResourceStreamer::EnqueueResources(const std::vector<Resource*>& resources, OnResourcesLoaded cb, LoadPriority priority)
 {
     std::unique_lock<std::mutex> queueLock(m_queueMutex);
-    m_queue.emplace_back(resources, cb);
+    
+    if(priority == LoadPriority::DEFAULT)
+    {
+        m_queue.emplace_back(resources, cb);
+    }
+    else if(priority == LoadPriority::HIGH)
+    {
+        m_queue.emplace_front(resources, cb);
+    }
 }
 
 void ResourceStreamer::Execute()
