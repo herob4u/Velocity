@@ -3,6 +3,8 @@
 #include "ResourceMgr.h"
 #include "Engine/IO/FileMgr.h"
 
+using namespace Vct;
+
 Resource::Resource(const std::string& resFile)
     : m_ResPath(resFile.c_str())
     , m_RefCount(0)

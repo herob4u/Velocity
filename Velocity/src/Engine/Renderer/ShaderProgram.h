@@ -6,9 +6,9 @@
 #include "Engine/Resources/Resource.h"
 #include <string>
 
-static Resource::Type ResType_Shader("shader");
+static Vct::Resource::Type ResType_Shader("shader");
 
-class ShaderProgram : public Resource {
+class ShaderProgram : public Vct::Resource {
 public:
     static std::string getShaderFile(const char* file);
 

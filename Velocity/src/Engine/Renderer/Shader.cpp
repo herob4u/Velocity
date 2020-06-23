@@ -224,6 +224,15 @@ Shader::Shader(const StringId& shaderName)
     {
         m_RendererId = glCreateProgram();
         glProgramBinary(m_RendererId, 0, precompiledShader.Data, (GLsizei)precompiledShader.Bytes);
+
+        std::vector<char> errorMsg;
+        if(HasLinkErrors(errorMsg))
+        {
+            glDeleteProgram(m_RendererId);
+
+            m_VertexShader = nullptr;
+            m_FragmentShader = nullptr;
+        }
     }
     else
     {

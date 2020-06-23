@@ -14,9 +14,9 @@
 
 Vct::Engine* Vct::gEngine = new Vct::VelocityEngine();
 
-static Resource::Type TextResourceType("text");
+static Vct::Resource::Type TextResourceType("text");
 
-class TextResource : public Resource
+class TextResource : public Vct::Resource
 {
 public:
     TextResource(const std::string& resFile) : Resource(resFile) {}
@@ -48,7 +48,7 @@ protected:
     }
 };
 
-class TextResourceMgr : public ResourceMgr
+class TextResourceMgr : public Vct::ResourceMgr
 {
 public:
     enum TextFormats
@@ -56,7 +56,7 @@ public:
         INVALID = 0, TXT = 1, XML, JSON
     };
 protected:
-    Resource* CreateResource(const Path& resPath) override
+    Vct::Resource* CreateResource(const Path& resPath) override
     {
         std::string ext(4, '\0');
         resPath.GetExtension(ext);
@@ -70,7 +70,7 @@ protected:
         return nullptr;
     }
 
-    void      DestroyResource(Resource& res) override
+    void      DestroyResource(Vct::Resource& res) override
     {
         const Path resPath = res.GetPath();
         if(res.IsLoaded())
@@ -82,7 +82,7 @@ protected:
         auto found = m_ResourceList.find(resPath.GetPathId());
         if(found != m_ResourceList.end())
         {
-            Resource* res = found->second;
+            Vct::Resource* res = found->second;
             if(res)
             {
                 delete res;
@@ -130,7 +130,7 @@ int main(int argc, char** argv)
     mgr.SetBasePath(CONTENT_DIR);
 
     // Register all resource managers by type
-    ResourceMgrRegistry::Get().Register(TextResourceType, new TextResourceMgr());
+    Vct::ResourceMgrRegistry::Get().Register(TextResourceType, new TextResourceMgr());
     //Vct::Renderer::Get(); // This is placeholder BS. Currently the renderer is responsible for intializing upon construction... this needs to change
     {
         // This should fail!
@@ -140,7 +140,7 @@ int main(int argc, char** argv)
         Vct::Texture2D* texture = testTexture.Load();
         */
 
-        TResourcePtr<TextResource> asset1("asset1.txt");
+        Vct::TResourcePtr<TextResource> asset1("asset1.txt");
         asset1.Load();
     }
     app.PushLayer(new Vct::ViewportLayer());
