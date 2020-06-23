@@ -60,7 +60,7 @@ void ViewportLayer::OnAttached()
     RenderCommands::ClearBuffers();
     RenderCommands::SetClearColor(0.2f, 0.2f, 0.2f);
 
-    while(!m_BackgroundTexture.IsValid()) {}
+    //while(!m_BackgroundTexture.IsValid()) {}
 
     renderer.BeginScene(m_Camera);
     Renderer::Bind(*m_ScreenshotBuffer);
@@ -86,7 +86,7 @@ void ViewportLayer::OnUpdate(float dt)
         RenderCommands::DrawImage(m_TexturedQuadShader, m_BackgroundTexture.Get());
     renderer.EndScene();
 
-    Shader skyboxShader = Shader("Shaders/Skybox");
+    Shader skyboxShader = Shader("Skybox");
 }
 
 void ViewportLayer::OnDetached()

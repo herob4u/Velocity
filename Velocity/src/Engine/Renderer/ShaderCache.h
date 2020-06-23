@@ -10,15 +10,17 @@ namespace Vct
     */
     struct ShaderBinary
     {
-        ShaderBinary(void* data, size_t bytes)
+        ShaderBinary(void* data, size_t bytes, int format)
             : Data(data)
             , Bytes(bytes)
+            , Format(format)
         {
         }
 
         ShaderBinary()
             : Data(nullptr)
             , Bytes(0)
+            , Format(0)
         {
         }
 
@@ -28,6 +30,7 @@ namespace Vct
                 free(Data);
 
             Bytes = 0;
+            Format = 0;
         }
 
         FORCEINLINE bool IsEmpty() const { return (!Data || Bytes == 0); }
@@ -36,6 +39,7 @@ namespace Vct
 
         void* Data;
         size_t Bytes;
+        int Format;
     };
 
     /*  The Shader Cache represent a mapping between a shader name and its precompiled binary data.

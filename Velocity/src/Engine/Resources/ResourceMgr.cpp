@@ -5,8 +5,9 @@
 
 using namespace Vct;
 
-ResourceLoader ResourceMgr::m_ResourceLoader;
-ResourceStreamer ResourceMgr::m_ResourceStreamer(ResourceMgr::m_ResourceLoader);
+SyncResourceLoader ResourceMgr::m_SyncResourceLoader;
+ResourceStreamer ResourceMgr::m_ResourceStreamer(ResourceMgr::m_SyncResourceLoader);
+
 
 ResourceMgr::ResourceMgr()
 {

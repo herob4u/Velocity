@@ -9,7 +9,7 @@ using namespace Vct;
 static const std::string SHADER_CACHE_EXTENSION = "scf";
 static const StringId    SHADER_CACHE_EXTENSION_ID = ".scf";
 
-ShaderBinary ShaderBinary::Null = ShaderBinary(nullptr, 0);
+ShaderBinary ShaderBinary::Null = ShaderBinary(nullptr, 0, 0);
 
 ShaderCache::ShaderCache(const Path& cacheFolder)
     : m_CacheFolder(cacheFolder)
@@ -30,18 +30,21 @@ void ShaderCache::CacheProgram(const Shader& shader)
     
     void* binary = nullptr;
     size_t bytes = 0;
+    int format = 0;
 
-    if(shader.GetBinary(&binary, bytes))
+    if(shader.GetBinary(&binary, bytes, format))
     {
+        VCT_INFO("Shader Binary: \n {0}", std::string((char*)binary, bytes));
+
         // Update the existing cache, or create a new entry if non-existent.
         auto found = m_BinaryCache.find(shaderName);
         if(found == m_BinaryCache.end())
         {
-            m_BinaryCache.emplace(shaderName, ShaderBinary(binary, bytes));
+            m_BinaryCache.emplace(shaderName, ShaderBinary(binary, bytes, format));
         }
         else
         {
-            found->second = ShaderBinary(binary, bytes);
+            found->second = ShaderBinary(binary, bytes, format);
         }
 
         // Maybe we want saving to be explicit - from an editor or something
@@ -118,11 +121,11 @@ void ShaderCache::LoadCache(bool bOverwrite)
             auto found = m_BinaryCache.find(shaderNameId);
             if(found == m_BinaryCache.end())
             {
-                m_BinaryCache.emplace(shaderNameId, ShaderBinary(data, size));
+                m_BinaryCache.emplace(shaderNameId, ShaderBinary(data, size, 0));
             }
             else
             {
-                found->second = ShaderBinary(data, size);
+                found->second = ShaderBinary(data, size, 0);
             }
 
             file.Close();

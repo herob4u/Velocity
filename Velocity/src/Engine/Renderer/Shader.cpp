@@ -216,6 +216,11 @@ namespace Vct
 Shader::Shader(const StringId& shaderName)
     : m_ShaderName(shaderName)
 {
+    // @TODO: Current driver does not support precompiled binary!!!
+    GLint format = 0;
+    glGetIntegerv(GL_SHADER_BINARY_FORMATS, &format);
+    ASSERT(format > 0, "No binary formats supported!");
+
     ShaderCache& shaderCache = gEngine->GetShaderCache();
 
     // If the shader cache already has precompiled binaries for this shader, simply upload it.
@@ -223,11 +228,12 @@ Shader::Shader(const StringId& shaderName)
     if(!precompiledShader.IsEmpty())
     {
         m_RendererId = glCreateProgram();
-        glProgramBinary(m_RendererId, 0, precompiledShader.Data, (GLsizei)precompiledShader.Bytes);
+        glProgramBinary(m_RendererId, (GLenum)36385, precompiledShader.Data, (GLsizei)precompiledShader.Bytes); // temporary hack for format until we read it from file properly
 
         std::vector<char> errorMsg;
         if(HasLinkErrors(errorMsg))
         {
+            VCT_ERROR("Shader Link Error: {0}", errorMsg.data());
             glDeleteProgram(m_RendererId);
 
             m_VertexShader = nullptr;
@@ -254,6 +260,7 @@ Shader::Shader(const StringId& shaderName)
         std::vector<char> errorMsg;
         if(HasLinkErrors(errorMsg))
         {
+            VCT_ERROR("Shader Link Error: {0}", errorMsg.data());
             glDeleteProgram(m_RendererId);
 
             m_VertexShader = nullptr;
@@ -304,7 +311,7 @@ void Shader::Unbind()
     glUseProgram(0);
 }
 
-bool Shader::GetBinary(void** outData, size_t& bytes) const
+bool Shader::GetBinary(void** outData, size_t& bytes, int& format) const
 {
     if(m_RendererId != 0)
     {
@@ -316,8 +323,7 @@ bool Shader::GetBinary(void** outData, size_t& bytes) const
         bytes       = length;
         *outData    = malloc(bytes);
 
-        GLenum format = 0;
-        glGetProgramBinary(m_RendererId, length, NULL, &format, *outData);
+        glGetProgramBinary(m_RendererId, length, NULL, (GLenum*)&format, *outData);
 
         return true;
     }

@@ -20,6 +20,8 @@ namespace Vct
         virtual Renderer& GetRenderer() = 0;
         virtual ShaderCache& GetShaderCache() = 0;
         virtual ResourceMgrRegistry& GetResourceRegistry() = 0;
+
+        virtual void HandleEvents() = 0;
     protected:
         
     private:
@@ -41,6 +43,8 @@ namespace Vct
         virtual Renderer& GetRenderer() override;
         virtual ShaderCache& GetShaderCache() override;
         virtual ResourceMgrRegistry& GetResourceRegistry() override;
+
+        virtual void HandleEvents() override;
     protected:
     private:
         Renderer m_Renderer;

@@ -5,6 +5,8 @@
 
 #include "Engine/Events/WindowEvents.h"
 
+static const std::thread::id MAIN_THREAD_ID = std::this_thread::get_id();
+
 namespace Vct
 {
     class Application

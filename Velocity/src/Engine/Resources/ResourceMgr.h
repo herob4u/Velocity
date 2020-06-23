@@ -36,6 +36,8 @@ namespace Vct
         }
 
         void Dump() const;
+
+        static SyncResourceLoader& GetResourceLoader() { return m_SyncResourceLoader; }
     protected:
         // These are called internally to handle the allocation and destruction of resources.
         // @TODO: Instead of virtual methods, how about template specialization?
@@ -48,7 +50,9 @@ namespace Vct
     
         // These need to be static! Only 1 streamer and loader in the scope of the engine
         static ResourceStreamer m_ResourceStreamer;
-        static ResourceLoader m_ResourceLoader;
+        static SyncResourceLoader m_SyncResourceLoader;
+        //static AsyncResourceLoader m_AsyncResourceLoader;
+        //static ResourceLoader m_ResourceLoader;
     };
 
     class ResourceMgrRegistry

@@ -5,6 +5,8 @@
 #include "Core.h"
 #include "Log.h"
 
+#include "Engine/Engine.h"
+
 using namespace Vct;
 
 Application* Application::s_Instance = nullptr;
@@ -41,6 +43,8 @@ void Application::Run()
         // Calculate delta time
         float dt = Time::Tick();
 
+        gEngine->HandleEvents();
+
         // Update layers
         for(Layer* layer : m_LayerStack)
         {
@@ -48,6 +52,8 @@ void Application::Run()
         }
 
         m_Window->OnUpdate();
+
+        gEngine->HandleEvents();
     }
 }
 

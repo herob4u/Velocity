@@ -4,6 +4,7 @@
 #include "Image.h"
 
 #include "Engine/Renderer/Renderer.h"
+#include "Engine/Core/Application.h"
 
 #include "glad/glad.h"
 
@@ -225,7 +226,30 @@ void Texture2D::Rebuild()
 
     Vct::Renderer& renderer = Vct::Renderer::Get();
 
-    renderer.GenerateTextureAsync(RendererId, m_Image->GetData(), m_Image->GetWidth(), m_Image->GetHeight(), format, type, wrapMode);
+    if(std::this_thread::get_id() == MAIN_THREAD_ID)
+    {
+        Init(m_Image->GetData(), m_Image->GetWidth(), m_Image->GetHeight(), format, type, wrapMode);
+    }
+    else
+    {
+        renderer.GenerateTextureAsync(RendererId, m_Image->GetData(), m_Image->GetWidth(), m_Image->GetHeight(), format, type, wrapMode);
+    }
+}
+
+void Texture2D::Init(const uint8_t * data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode)
+{
+    glGenTextures(1, &RendererId);
+    glBindTexture(GL_TEXTURE_2D, RendererId);
+    glPixelStorei(GL_UNPACK_ALIGNMENT, 1);
+    glTexImage2D(GL_TEXTURE_2D, 0, format, width, height, 0, format, type, data);
+    glGenerateMipmap(GL_TEXTURE_2D);
+
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, wrapMode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, wrapMode);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_LINEAR);
+    
+    glBindTexture(GL_TEXTURE_2D, 0);
 }
 
 bool Texture2D::Load(const void* rawBinary, size_t bytes)
@@ -243,7 +267,15 @@ void Texture2D::Unload()
 {
     Vct::Renderer& renderer = Vct::Renderer::Get();
 
-    renderer.DeleteTextureAsync(RendererId);
+    if(std::this_thread::get_id() == MAIN_THREAD_ID)
+    {
+        if(RendererId != 0)
+            glDeleteTextures(1, &RendererId);
+    }
+    else
+    {
+        renderer.DeleteTextureAsync(RendererId);
+    }
 
     m_Image.release();
 }

@@ -50,3 +50,9 @@ ResourceMgrRegistry& VelocityEngine::GetResourceRegistry()
 {
     return ResourceMgrRegistry::Get();
 }
+
+void VelocityEngine::HandleEvents()
+{
+    SyncResourceLoader& loader = ResourceMgr::GetResourceLoader();
+    loader.Handle();
+}

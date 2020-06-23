@@ -43,6 +43,7 @@ namespace Vct
         Texture2D(uint16_t width, uint16_t height, Format format, DataType type, WrapMode wrapMode);
 
         void Rebuild();
+        void Init(const uint8_t* data, uint16_t width, uint16_t height, uint16_t format, uint16_t type, uint16_t wrapMode);
 
         // Resource Interface
         virtual bool Load(const void* rawBinary, size_t bytes) override;

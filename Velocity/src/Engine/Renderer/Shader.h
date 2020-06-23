@@ -41,7 +41,7 @@ namespace Vct
 
         FORCEINLINE const StringId& GetShaderName() const { return m_ShaderName; }
         FORCEINLINE Attributes GetAttributes() const      { return m_Attributes; }
-        bool GetBinary(void** outData, size_t& bytes) const;
+        bool GetBinary(void** outData, size_t& bytes, int& format) const;
 
     protected:
         bool HasLinkErrors(std::vector<char>& outErrorMsg);

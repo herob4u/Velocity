@@ -26,6 +26,8 @@ namespace Vct
         friend class ResourceMgr;
         friend struct ResourceStreamer;
         friend struct ResourceLoader;
+        friend struct AsyncResourceLoader;
+        friend struct SyncResourceLoader;
 
         /* Usage: Each resource sub-class define */
         struct Type
