@@ -216,10 +216,7 @@ namespace Vct
 Shader::Shader(const StringId& shaderName)
     : m_ShaderName(shaderName)
 {
-    // @TODO: Current driver does not support precompiled binary!!!
-    GLint format = 0;
-    glGetIntegerv(GL_SHADER_BINARY_FORMATS, &format);
-    ASSERT(format > 0, "No binary formats supported!");
+    bool success = false;
 
     ShaderCache& shaderCache = gEngine->GetShaderCache();
 
@@ -233,28 +230,17 @@ Shader::Shader(const StringId& shaderName)
         std::vector<char> errorMsg;
         if(HasLinkErrors(errorMsg))
         {
-            VCT_ERROR("Shader Link Error: {0}", errorMsg.data());
-            glDeleteProgram(m_RendererId);
-
-            m_VertexShader = nullptr;
-            m_FragmentShader = nullptr;
+            VCT_WARN("Shader Link Error, recompiling from source: {0}", errorMsg.data());
+            success = false;
+        }
+        else
+        {
+            success = true;
         }
     }
-    else
+
+    if(!success)
     {
-        char vertexShaderPath[MAX_PATH_LENGTH];
-        char fragmentShaderPath[MAX_PATH_LENGTH];
-
-        // This is wrong, we want relative paths when initializing resources! FileMgr handles the abs path
-        //sprintf(vertexShaderPath,   "%s%s%s", SHADER_DIR, shaderName.ToStringRef(), ".vs");
-        //sprintf(fragmentShaderPath, "%s%s%s", SHADER_DIR, shaderName.ToStringRef(), ".fs");
-
-        sprintf(vertexShaderPath, "%s%s%s", "Shaders/", shaderName.ToStringRef(), ".vs");
-        sprintf(fragmentShaderPath, "%s%s%s", "Shaders/", shaderName.ToStringRef(), ".fs");
-
-        m_VertexShader = Path(vertexShaderPath);
-        m_FragmentShader = Path(fragmentShaderPath);
-
         Recompile();
 
         std::vector<char> errorMsg;
@@ -280,6 +266,19 @@ Shader::~Shader()
 
 void Shader::Recompile()
 {
+    char vertexShaderPath[MAX_PATH_LENGTH];
+    char fragmentShaderPath[MAX_PATH_LENGTH];
+
+    // This is wrong, we want relative paths when initializing resources! FileMgr handles the abs path
+    //sprintf(vertexShaderPath,   "%s%s%s", SHADER_DIR, shaderName.ToStringRef(), ".vs");
+    //sprintf(fragmentShaderPath, "%s%s%s", SHADER_DIR, shaderName.ToStringRef(), ".fs");
+
+    sprintf(vertexShaderPath, "%s%s%s", "Shaders/", m_ShaderName.ToStringRef(), ".vs");
+    sprintf(fragmentShaderPath, "%s%s%s", "Shaders/", m_ShaderName.ToStringRef(), ".fs");
+
+    m_VertexShader = Path(vertexShaderPath);
+    m_FragmentShader = Path(fragmentShaderPath);
+
     // Sync or Async load?
     m_VertexShader.Load();
     m_FragmentShader.Load();
@@ -301,12 +300,12 @@ void Shader::SetAttributes(Attributes attr)
     m_Attributes = attr;
 }
 
-void Shader::Bind()
+void Shader::Bind() const
 {
     glUseProgram(m_RendererId);
 }
 
-void Shader::Unbind()
+void Shader::Unbind() const
 {
     glUseProgram(0);
 }
@@ -347,10 +346,4 @@ bool Shader::HasLinkErrors(std::vector<char>& outErrorMsg)
     }
 
     return (isLinked == GL_FALSE);
-}
-
-void Shader::CreateShader(ShaderSource* shaderSrc)
-{
-    if(!shaderSrc)
-        return;
 }

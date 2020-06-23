@@ -36,8 +36,8 @@ namespace Vct
         void Recompile();
         void SetAttributes(Attributes attr);
 
-        void Bind();
-        void Unbind();
+        void Bind() const;
+        void Unbind() const;
 
         FORCEINLINE const StringId& GetShaderName() const { return m_ShaderName; }
         FORCEINLINE Attributes GetAttributes() const      { return m_Attributes; }
@@ -47,7 +47,6 @@ namespace Vct
         bool HasLinkErrors(std::vector<char>& outErrorMsg);
     private:
 
-        void CreateShader(class ShaderSource* shaderSrc);
     private:
         StringId m_ShaderName;
         uint32_t m_RendererId;
