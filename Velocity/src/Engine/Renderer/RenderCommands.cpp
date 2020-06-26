@@ -72,9 +72,9 @@ void RenderCommands::DrawImage(Ref<ShaderProgram> shader, Texture2D* texture)
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
 
-            texture->Bind();
+            texture->Bind(0);
             glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(uint32_t), GL_UNSIGNED_INT, 0);
-            texture->Unbind();
+            texture->Unbind(0);
 
 
             glDeleteBuffers(1, &vertexBuffer);

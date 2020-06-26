@@ -9,6 +9,7 @@
 
 namespace Vct
 {
+    class Shader;
     class ViewportLayer : public Layer
     {
     public:
@@ -21,6 +22,8 @@ namespace Vct
     private:
         TResourcePtr<class Texture2D> m_BackgroundTexture;
         std::shared_ptr<ShaderProgram> m_TexturedQuadShader;
+        std::shared_ptr<Shader> m_FlatShader;
+        std::shared_ptr<Shader> m_PBRShader;
         class Framebuffer* m_ScreenshotBuffer;
         Camera m_Camera;
     };    

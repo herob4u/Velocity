@@ -48,8 +48,8 @@ ViewportLayer::ViewportLayer()
     m_TexturedQuadShader->attachFragmentShader(fragShader.c_str());
     m_TexturedQuadShader->link();
 
-    Shader skyboxShader = Shader("Skybox");
-    Shader PBRShader = Shader("PBR");
+    m_FlatShader = std::make_shared<Shader>("FlatColor");
+
     gEngine->GetShaderCache().SaveCache();
 }
 

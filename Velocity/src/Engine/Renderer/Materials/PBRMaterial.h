@@ -11,7 +11,7 @@ namespace Vct
     public:
         PBRMaterial();
 
-        MAT_VEC3_PARAM(DiffuseColor, "material.diffuse");
+        MAT_VEC4_PARAM(DiffuseColor, "material.diffuse");
         MAT_VEC3_PARAM(EmissiveColor, "material.emissive");
         MAT_SCALAR_PARAM(MetallicIntensity, "material.metallic");
         MAT_SCALAR_PARAM(RoughnessIntensity, "material.roughness");
@@ -33,7 +33,7 @@ namespace Vct
     public:
         PBRMaterialInstance(PBRMaterial* parent);
 
-        MAT_VEC3_PARAM(DiffuseColor, "material.diffuse");
+        MAT_VEC4_PARAM(DiffuseColor, "material.diffuse");
         MAT_VEC3_PARAM(EmissiveColor, "material.emissive");
         MAT_SCALAR_PARAM(MetallicIntensity, "material.metallic");
         MAT_SCALAR_PARAM(RoughnessIntensity, "material.roughness");

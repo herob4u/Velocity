@@ -58,6 +58,9 @@ namespace Vct
         void SetUniform<glm::vec3>(const glm::vec3& val, const StringId& uniformName) { m_Shader->SetUniformVec3f(uniformName, val); }
 
         template <>
+        void SetUniform<glm::vec4>(const glm::vec4& val, const StringId& uniformName) { m_Shader->SetUniformVec4f(uniformName, val); }
+
+        template <>
         void SetUniform<glm::mat4>(const glm::mat4& val, const StringId& uniformName) { m_Shader->SetUniformMat4(uniformName, val); }
     private:
         Shader* m_Shader;
@@ -97,6 +100,9 @@ namespace Vct
         void SetUniform<glm::vec3>(const glm::vec3& val, const StringId& uniformName) { m_Material->GetShader()->SetUniformVec3f(uniformName, val); }
 
         template <>
+        void SetUniform<glm::vec4>(const glm::vec4& val, const StringId& uniformName) { m_Material->GetShader()->SetUniformVec4f(uniformName, val); }
+
+        template <>
         void SetUniform<glm::mat4>(const glm::mat4& val, const StringId& uniformName) { m_Material->GetShader()->SetUniformMat4(uniformName, val); }
     private:
         Material* m_Material;
@@ -114,6 +120,9 @@ void Set##ParamName(const glm::vec2& val) { SetUniform(val, UniformName); }
 
 #define MAT_VEC3_PARAM(ParamName, UniformName)\
 void Set##ParamName(const glm::vec3& val) { SetUniform(val, UniformName); }
+
+#define MAT_VEC4_PARAM(ParamName, UniformName)\
+void Set##ParamName(const glm::vec4& val) { SetUniform(val, UniformName); }
 
 #define MAT_MAT4_PARAM(ParamName, UniformName)\
 void Set##ParamName(const glm::mat4& val) { SetUniform(val, UniformName); }
