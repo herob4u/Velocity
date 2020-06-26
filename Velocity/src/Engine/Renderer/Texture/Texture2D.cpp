@@ -148,14 +148,15 @@ Texture2D::~Texture2D()
     m_Image.reset(nullptr);
 }
 
-void Texture2D::Bind() const
+void Texture2D::Bind(uint32_t textureSlot)
 {
-    glActiveTexture(m_TextureSlot);
+    glActiveTexture(textureSlot);
     glBindTexture(GL_TEXTURE_2D, RendererId);
 }
 
-void Texture2D::Unbind() const
+void Texture2D::Unbind(uint32_t textureSlot)
 {
+    glActiveTexture(textureSlot);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 

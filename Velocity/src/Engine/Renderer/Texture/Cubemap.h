@@ -35,6 +35,8 @@ namespace Vct
 
         std::vector<Ref<Image>> RenderToImages() const;
 
+        virtual void Bind(uint32_t textureSlot) override;
+        virtual void Unbind(uint32_t textureSlot) override;
         virtual void Destroy() override;
     protected:
         Cubemap() {}

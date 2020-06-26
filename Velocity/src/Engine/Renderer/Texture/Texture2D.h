@@ -27,8 +27,9 @@ namespace Vct
         ~Texture2D();
 
         // Rendering Methods
-        void Bind() const;
-        void Unbind() const;
+        virtual void Bind(uint32_t textureSlot) override;
+        virtual void Unbind(uint32_t textureSlot) override;
+
         void SetTextureSlot(uint32_t slotId);
         void SetWrapMode(WrapMode wrapMode);
 

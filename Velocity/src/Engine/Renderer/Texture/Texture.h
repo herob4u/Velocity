@@ -59,7 +59,8 @@ namespace Vct
 
         virtual ~Texture() {}
         virtual void Destroy() = 0;
-
+        virtual void Bind(uint32_t textureSlot) = 0;
+        virtual void Unbind(uint32_t textureSlot) = 0;
         FORCEINLINE uint32_t GetRendererId() const { return RendererId; }
     protected:
         uint32_t RendererId;

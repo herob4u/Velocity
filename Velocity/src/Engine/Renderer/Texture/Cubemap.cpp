@@ -115,6 +115,18 @@ std::vector<Ref<Image>> Cubemap::RenderToImages() const
     return outImages;
 }
 
+void Cubemap::Bind(uint32_t textureSlot)
+{
+    glActiveTexture(GL_TEXTURE0 + textureSlot);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, RendererId);
+}
+
+void Cubemap::Unbind(uint32_t textureSlot)
+{
+    glActiveTexture(GL_TEXTURE0 + textureSlot);
+    glBindTexture(GL_TEXTURE_CUBE_MAP, 0);
+}
+
 void Cubemap::Destroy()
 {
     if(RendererId != 0)

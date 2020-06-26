@@ -34,7 +34,7 @@ void ShaderCache::CacheProgram(const Shader& shader)
 
     if(shader.GetBinary(&binary, bytes, format))
     {
-        VCT_INFO("Shader Binary: \n {0}", std::string((char*)binary, bytes));
+        //VCT_INFO("Shader Binary: \n {0}", std::string((char*)binary, bytes));
 
         // Update the existing cache, or create a new entry if non-existent.
         auto found = m_BinaryCache.find(shaderName);

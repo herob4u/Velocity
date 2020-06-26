@@ -1,6 +1,7 @@
 #pragma once
 
 #include "Engine/Resources/Resource.h"
+#include "glm/glm.hpp"
 
 namespace Vct
 {
@@ -43,8 +44,34 @@ namespace Vct
         FORCEINLINE Attributes GetAttributes() const      { return m_Attributes; }
         bool GetBinary(void** outData, size_t& bytes, int& format) const;
 
+        void SetUniform1f(const StringId& uniform, float x);
+        void SetUniformVec2f(const StringId& uniform, const glm::vec2& vec);
+        void SetUniformVec3f(const StringId& uniform, const glm::vec3& vec);
+        void SetUniformVec4f(const StringId& uniform, const glm::vec4& vec);
+
+        void SetUniform1i(const StringId& uniform, int x);
+        void SetUniformVec2i(const StringId& uniform, const glm::ivec2& vec);
+        void SetUniformVec3i(const StringId& uniform, const glm::ivec3& vec);
+        void SetUniformVec4i(const StringId& uniform, const glm::ivec4& vec);
+
+        void SetUniformMat2(const StringId& uniform, const glm::mat2& mat, bool transpose = false);
+        void SetUniformMat3(const StringId& uniform, const glm::mat3& mat, bool transpose = false);
+        void SetUniformMat4(const StringId& uniform, const glm::mat4& mat, bool transpose = false);
+
+        void SetUniformArray1i(const StringId& uniform, int* values, uint32_t count);
+        void SetUniformArray1f(const StringId& uniform, float* values, uint32_t count);
+
+
     protected:
         bool HasLinkErrors(std::vector<char>& outErrorMsg);
+
+        void ScanUniforms();
+
+        // Caches a uniform location with the specified uniformName
+        int CacheUniform(const StringId& uniformName);
+
+        // Finds the location of a cached uniform
+        int FindUniformLocation(const StringId& uniformName) const;
     private:
 
     private:
@@ -52,6 +79,8 @@ namespace Vct
         uint32_t m_RendererId;
         TResourcePtr<ShaderSource> m_VertexShader;
         TResourcePtr<ShaderSource> m_FragmentShader;
+
+        std::array<StringId, 64> m_UniformCache;
 
         Attributes m_Attributes;
     };
@@ -65,6 +94,7 @@ namespace Vct
         bool IsCompiled() const { return IsLoaded(); }
         uint32_t& RendererId() { return m_RendererId; }
         ShaderType GetShaderType() const { return m_ShaderType; }
+        const std::string& GetShaderStr() const { return m_ShaderStr; }
 
         RES_TYPE(ResType_Shader);
     protected:
@@ -73,11 +103,13 @@ namespace Vct
         virtual void Unload() override;
 
         bool InitFromSource(const std::string& shaderSrc);
+        bool HasCompileErrors(std::vector<char>& ourErrorMsg);
+
         ShaderType ParseShaderType(const Path& shaderPath) const;
         ShaderType ParseShaderType(const std::string& shaderPath) const;
         std::string GenerateHeader(Shader::Attributes attr) const;
+
         uint8_t ScanAttributes(const std::string& shaderSrc) const;
-        bool HasCompileErrors(std::vector<char>& ourErrorMsg);
     private:
         uint32_t m_RendererId;
         ShaderType m_ShaderType;

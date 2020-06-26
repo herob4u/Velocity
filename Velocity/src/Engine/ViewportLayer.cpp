@@ -49,6 +49,7 @@ ViewportLayer::ViewportLayer()
     m_TexturedQuadShader->link();
 
     Shader skyboxShader = Shader("Skybox");
+    Shader PBRShader = Shader("PBR");
     gEngine->GetShaderCache().SaveCache();
 }
 

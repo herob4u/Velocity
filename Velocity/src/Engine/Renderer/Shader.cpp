@@ -4,6 +4,7 @@
 #include "Engine/Engine.h"
 
 #include "glad/glad.h"
+#include "glm/gtc/type_ptr.hpp"
 
 // Annoying sprintf/sscanf safety warning
 #pragma warning(disable:4996)
@@ -47,8 +48,8 @@ namespace Vct
 
     bool ShaderSource::Load(const void* rawBinary, size_t bytes)
     {
-        std::string shaderSrc = std::string((char*)rawBinary, bytes);
-        return InitFromSource(shaderSrc);
+        m_ShaderStr = std::string((char*)rawBinary, bytes);
+        return InitFromSource(m_ShaderStr);
     }
 
     void ShaderSource::Unload()
@@ -256,8 +257,9 @@ Shader::Shader(const StringId& shaderName)
         {
             shaderCache.CacheProgram(*this);
         }
-        
     }
+
+    ScanUniforms();
 }
 
 Shader::~Shader()
@@ -346,4 +348,204 @@ bool Shader::HasLinkErrors(std::vector<char>& outErrorMsg)
     }
 
     return (isLinked == GL_FALSE);
+}
+
+void Shader::ScanUniforms()
+{
+    int numUniforms = 0;
+    glGetProgramiv(m_RendererId, GL_ACTIVE_UNIFORMS, &numUniforms);
+
+    for(int i = 0; i < numUniforms; i++)
+    {
+        GLchar uniformName[32];
+        GLenum uniformType;
+        GLint uniformSize;
+
+        glGetActiveUniform(m_RendererId, i, 32, nullptr, &uniformSize, &uniformType, uniformName);
+        
+        GLint location = glGetUniformLocation(m_RendererId, uniformName);
+        //ASSERT(location != -1, "Expected valid uniform location. Was uniform name invalid?");
+        if(location != -1)
+        m_UniformCache[location] = StringId(uniformName);
+
+        VCT_INFO("Uniform: {0} {1}, size={2}", uniformType, uniformName, uniformSize);
+    }
+}
+
+int Shader::CacheUniform(const StringId& uniformName)
+{
+    int location = glGetUniformLocation(m_RendererId, uniformName.ToStringRef());
+    ASSERT(location != -1, "Uniform '{0}' does not exist", uniformName.ToStringRef());
+    ASSERT(location < 64, "Uniform location index out of range");
+    m_UniformCache[location] = uniformName;
+    return location;
+}
+
+int Shader::FindUniformLocation(const StringId & uniformName) const
+{
+    for(int i = 0; i < 64; i++)
+    {
+        if(m_UniformCache[i] == uniformName)
+            return i;
+    }
+
+    return -1;
+}
+
+// Uniforms 
+
+void Shader::SetUniform1f(const StringId& uniform, float x)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform1f(location, x);
+}
+
+void Shader::SetUniformVec2f(const StringId& uniform, const glm::vec2& vec)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform2f(location, vec.x, vec.y);
+}
+
+void Shader::SetUniformVec3f(const StringId& uniform, const glm::vec3& vec)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform3f(location, vec.x, vec.y, vec.z);
+}
+
+void Shader::SetUniformVec4f(const StringId& uniform, const glm::vec4& vec)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform4f(location, vec.x, vec.y, vec.z, vec.w);
+}
+
+void Shader::SetUniform1i(const StringId& uniform, int x)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform1i(location, x);
+}
+
+void Shader::SetUniformVec2i(const StringId& uniform, const glm::ivec2& vec)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform2i(location, vec.x, vec.y);
+}
+
+void Shader::SetUniformVec3i(const StringId& uniform, const glm::ivec3& vec)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform3i(location, vec.x, vec.y, vec.z);
+}
+
+void Shader::SetUniformVec4i(const StringId& uniform, const glm::ivec4& vec)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform4i(location, vec.x, vec.y, vec.z, vec.w);
+}
+
+void Shader::SetUniformMat2(const StringId& uniform, const glm::mat2& mat, bool transpose)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniformMatrix2fv(location, 1, transpose, glm::value_ptr(mat));
+}
+
+void Shader::SetUniformMat3(const StringId& uniform, const glm::mat3& mat, bool transpose)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniformMatrix3fv(location, 1, transpose, glm::value_ptr(mat));
+}
+
+void Shader::SetUniformMat4(const StringId& uniform, const glm::mat4& mat, bool transpose)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniformMatrix4fv(location, 1, transpose, glm::value_ptr(mat));
+}
+
+void Shader::SetUniformArray1i(const StringId& uniform, int* values, uint32_t count)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform1iv(location, count, values);
+}
+
+void Shader::SetUniformArray1f(const StringId& uniform, float* values, uint32_t count)
+{
+    int location = FindUniformLocation(uniform);
+
+    if(location == -1)
+    {
+        location = CacheUniform(uniform);
+    }
+
+    glUniform1fv(location, count, values);
 }

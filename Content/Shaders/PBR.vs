@@ -2,11 +2,11 @@
 
 #define MAX_SCENE_LIGHTS 16
 
-in (layout=0) vec3 a_Position;
-in (layout=1) vec3 a_Normal;
-in (layout=2) vec2 a_TexCoord;
-in (layout=3) vec3 a_Tangent;
-in (layout=4) vec3 a_BiTangent;
+in layout(location=0) vec3 a_Position;
+in layout(location=1) vec3 a_Normal;
+in layout(location=2) vec2 a_TexCoord;
+in layout(location=3) vec3 a_Tangent;
+in layout(location=4) vec3 a_BiTangent;
 
 out vec3 eye_Position;
 out vec3 eye_Normal;
@@ -26,7 +26,7 @@ struct DirectionalLight
 	vec3 Intensity;
 };
 
-uniform SceneData
+layout (std140) uniform SceneData
 {
 	mat4 View;
 	mat4 Projection;
@@ -42,19 +42,23 @@ void main()
 {
 	// Eye space quantities for fragment shader
 	vec4 position_xyzw = vec4(a_Position, 1.f);
+	vec4 normal_xyzw   = vec4(a_Normal, 1.f);
+	mat3 normalMatrix3 = mat3(sceneData.NormalMatrix);
+
 	eye_Position	= (sceneData.View * Model * position_xyzw).xyz;
-	eye_Normal		= normalize(sceneData.NormalMatrix * a_Normal);
+	//eye_Normal		= normalize(sceneData.NormalMatrix * normal_xyzw).xyz;
+	eye_Normal		= normalize(normalMatrix3 * a_Normal);
 
 	// TBN Matrix for normal map sampling
-	vec3 T = normalize(sceneData.NormalMatrix * a_Tangent);
-	vec3 B = normalize(sceneData.NormalMatrix * a_BiTangent);
+	vec3 T = normalize(normalMatrix3 * a_Tangent);
+	vec3 B = normalize(normalMatrix3 * a_BiTangent);
 	TBN = mat3(T, B, eye_Normal);
 
 	// Texture coordinates
 	TexCoord = a_TexCoord;
 
 	// Invert normal matrix here, less computations than doing it in fragment shader!
-	InvNormalMatrix = transpose(sceneData.NormalMatrix);
+	InvNormalMatrix = mat3(transpose(sceneData.NormalMatrix));
 
-	gl_Position = Projection * View * Model * vec4(a_Position, 1.0f);
+	gl_Position = sceneData.Projection * sceneData.View * Model * vec4(a_Position, 1.0f);
 }

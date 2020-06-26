@@ -1,4 +1,4 @@
-#version 330
+#version 400
 
 in vec3 eye_Position;
 in vec3 eye_Normal;
@@ -6,23 +6,53 @@ in vec2 TexCoord;
 in mat3 TBN;
 in mat3 InvNormalMatrix;
 
-uniform Maps
+out vec4 fragColor;
+
+#define MAX_SCENE_LIGHTS 16
+
+struct PointLight
+{
+	vec3 Position;
+	vec3 Intensity;
+};
+
+struct DirectionalLight
+{
+	vec3 Direction;
+	vec3 Intensity;
+};
+
+layout (std140) uniform SceneData
+{
+	mat4 View;
+	mat4 Projection;
+	mat4 NormalMatrix;
+
+	DirectionalLight Sunlight;
+	PointLight Lights[MAX_SCENE_LIGHTS];
+} sceneData;
+
+struct Maps
 {
 	sampler2D diffuse;
 	sampler2D normal;
 	sampler2D mask1; // x = metallicness, y = roughness, w = rim light
 	samplerCube environment;
 	sampler2D irradiance;
-} maps;
+	sampler2D emissive;
+};
+
+uniform Maps maps;
 
 uniform Material
 {
 	vec4 diffuse;
 	vec4 mask1; // x = metallicness, y = roughness, w = rim light
+	vec3 emissive;
 } material;
 
-const float pi = 3.141592653589793;
-const float lambertian = (1.0 / pi);
+const float PI = 3.141592653589793;
+const float lambertian = (1.0 / PI);
 
 float saturate(in float val)
 {
@@ -83,7 +113,7 @@ float G_schlick(in float roughness, in float NdV, in float NdL)
 // Cook-Torrance Specular Model
 vec3 CT_specular(in float NdL, in float NdV, in float NdH, in vec3 fresnel_factor, in float roughness)
 {
-
+	return vec3(0.0);
 }
 
 vec3 Sunlight(vec3 V, vec3 N, vec3 sunDir, vec3 sunIntensity)
@@ -91,7 +121,7 @@ vec3 Sunlight(vec3 V, vec3 N, vec3 sunDir, vec3 sunIntensity)
 	vec3 L = -sunDir;
 	vec3 H = normalize(L+V);
 
-
+	return vec3(0.0);
 }
 
 void main()
@@ -167,10 +197,10 @@ void main()
 	vec3 ibl_spec = min(vec3(0.99), fresnel_factor(specular, NdV) * ibl_diffuse.x + ibl_diffuse.y);
 
 	reflected_light += ibl_spec * env_spec;
-	diffuse_light   += ibl_diffuse * env_diffuse;
+	diffuse_light   += env_diffuse * (1.0 / PI);
 
 	// Final fragment color
 	// Linear combination of diffuse and specular models
 	vec3 color = diffuse_light * mix(diffuse, vec3(0.0), metallicness) + reflected_light;
-	gl_FragColor = vec4(color, 1.0);
+	fragColor = vec4(color, 1.0);
 }
