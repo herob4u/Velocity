@@ -2,6 +2,7 @@
 #include "Mesh.h"
 
 #include "Engine/Core/Core.h"
+#include "Engine/Renderer/GLError.h"
 
 #include "glad/glad.h"
 
@@ -64,38 +65,70 @@ Mesh::Mesh(uint32_t numVertices, uint16_t numTriangles)
 {
 }
 
+Mesh::~Mesh()
+{
+    glDeleteBuffers(1, &m_vao);
+    glDeleteBuffers(1, &m_vbo);
+    glDeleteBuffers(1, &m_ibo);
+}
+
+void Mesh::Draw()
+{
+    glBindVertexArray(m_vao);
+    //glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
+    GL_CHECK_ERROR();
+
+    glDrawElements(GL_TRIANGLES, GetNumTriangles() * 3, GL_UNSIGNED_INT, nullptr);
+    GL_CHECK_ERROR();
+
+    glBindVertexArray(0);
+}
+
 void Mesh::InitBuffers(const void* vertexData, size_t size, const std::vector<Triangle>& triangles)
 {
     glGenVertexArrays(1, &m_vao);
     glBindVertexArray(m_vao);
+
+    GL_CHECK_ERROR();
 
     // Interleaved Vertex Buffer
     glGenBuffers(1, &m_vbo);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
     glBufferData(GL_ARRAY_BUFFER, size, vertexData, GL_STATIC_DRAW);
 
+    GL_CHECK_ERROR();
+
     // Index Buffer
     glGenBuffers(1, &m_ibo);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, m_ibo);
-    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(unsigned int) * 3 * triangles.size(), triangles.data(), GL_STATIC_DRAW);
+    glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(Triangle) * triangles.size(), triangles.data(), GL_STATIC_DRAW);
+    GL_CHECK_ERROR();
 
+    glBindVertexArray(0);
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
-    glBindVertexArray(0);
+
+    GL_CHECK_ERROR();
 }
 
 void Mesh::SetBufferLayout(const BufferLayout& layout)
 {
+    GL_CHECK_ERROR();
+
     glBindVertexArray(m_vao);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
+
+    GL_CHECK_ERROR();
 
     uint32_t stride = layout.GetStride();
     int i = 0;
     for(const BufferElement& element : layout)
     {
         glEnableVertexAttribArray(i);
-        glVertexAttribPointer(i++, element.GetElementCount(), GLType(element.Type), element.Normalized, stride, nullptr);
+        glVertexAttribPointer(i++, element.GetElementCount(), GLType(element.Type), element.Normalized, stride, (void*)(element.Offset));
     }
+
+    GL_CHECK_ERROR();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
     glBindVertexArray(0);
@@ -126,5 +159,14 @@ SkyboxMesh::SkyboxMesh(const std::vector<SkyboxVertex>& vertices, const std::vec
     InitBuffers(vertices.data(), sizeof(SkyboxVertex) * vertices.size(), indices);
 
     BufferLayout& bufferLayout = SkyboxVertex::GetLayout();
+    SetBufferLayout(bufferLayout);
+}
+
+ColorMesh::ColorMesh(const std::vector<ColoredVertex>& vertices, const std::vector<Triangle>& indices)
+    : Mesh(vertices.size(), indices.size())
+{
+    InitBuffers(vertices.data(), sizeof(ColoredVertex) * vertices.size(), indices);
+
+    BufferLayout& bufferLayout = ColoredVertex::GetLayout();
     SetBufferLayout(bufferLayout);
 }

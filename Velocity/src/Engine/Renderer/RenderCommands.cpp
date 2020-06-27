@@ -7,6 +7,8 @@
 #include "Mesh/Mesh.h"
 #include "ShaderProgram.h"
 
+#include "GLError.h"
+
 #include "glad/glad.h"
 
 using namespace Vct;
@@ -51,30 +53,37 @@ void RenderCommands::DrawImage(Ref<ShaderProgram> shader, Texture2D* texture)
             GLuint texCoordBuffer;
             GLuint indexBuffer;
 
+            GL_CHECK_ERROR();
+
             GLuint posAttribute = shader->getAttribLocation("a_Position");
             GLuint texAttribute = shader->getAttribLocation("a_TexCoord");
             glEnableVertexAttribArray(posAttribute);
             glEnableVertexAttribArray(texAttribute);
+            GL_CHECK_ERROR();
 
             glGenBuffers(1, &vertexBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer);
             glBufferData(GL_ARRAY_BUFFER, sizeof(vertices), vertices, GL_STATIC_DRAW);
             glVertexAttribPointer(posAttribute, 3, GL_FLOAT, false, 0, nullptr);
+            GL_CHECK_ERROR();
 
             glGenBuffers(1, &texCoordBuffer);
             glBindBuffer(GL_ARRAY_BUFFER, texCoordBuffer);
             glBufferData(GL_ARRAY_BUFFER, sizeof(uvs), uvs, GL_STATIC_DRAW);
             glVertexAttribPointer(texAttribute, 2, GL_FLOAT, false, 0, nullptr);
+            GL_CHECK_ERROR();
 
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
             glGenBuffers(1, &indexBuffer);
             glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer);
             glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+            GL_CHECK_ERROR();
 
             texture->Bind(0);
             glDrawElements(GL_TRIANGLES, sizeof(indices)/sizeof(uint32_t), GL_UNSIGNED_INT, 0);
             texture->Unbind(0);
+            GL_CHECK_ERROR();
 
 
             glDeleteBuffers(1, &vertexBuffer);
@@ -85,6 +94,8 @@ void RenderCommands::DrawImage(Ref<ShaderProgram> shader, Texture2D* texture)
         glDeleteBuffers(1, &vao);
 
         shader->disable();
+        GL_CHECK_ERROR();
+
     }
 }
 

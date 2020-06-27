@@ -5,6 +5,8 @@
 
 using namespace Vct;
 
+const float Camera::WORLD_Z_MAX = 1000.f;
+
 Camera::Camera(const Frustum& frustum)
     : m_Frustum(frustum)
     , m_View(glm::mat4(1.f))
@@ -22,6 +24,7 @@ Camera::Camera(float fov, float aspect, float nearz, float farz)
     , m_Position(glm::vec3(0.f))
     , m_Rotation(Rotator())
 {
+    RecomputeProjection();
 }
 
 void Camera::SetFOV(float fov)
@@ -76,12 +79,24 @@ void Camera::Offset(const glm::vec3& offset)
 void Camera::SetRotation(const Rotator& rotation)
 {
     m_Rotation = rotation;
+
+    if(m_Rotation.Pitch > 89.0f)
+        m_Rotation.Pitch = 89.0f;
+    else if(m_Rotation.Pitch < -89.0f)
+        m_Rotation.Pitch = -89.0f;
+
     RecomputeView();
 }
 
 void Camera::AddRotation(const Rotator& rotation)
 {
     m_Rotation += rotation;
+
+    if(m_Rotation.Pitch > 89.0f)
+        m_Rotation.Pitch = 89.0f;
+    else if(m_Rotation.Pitch < -89.0f)
+        m_Rotation.Pitch = -89.0f;
+
     RecomputeView();
 }
 
@@ -95,13 +110,20 @@ void Camera::LookAt(const glm::vec3 target)
 
 void Camera::RecomputeProjection()
 {
-    m_Projection = glm::perspective(m_Frustum.FOV, m_Frustum.Aspect, m_Frustum.NearZ, m_Frustum.FarZ);
+    m_Projection = glm::perspective(glm::radians(m_Frustum.FOV), m_Frustum.Aspect, m_Frustum.NearZ, m_Frustum.FarZ);
     RecomputeViewProjection();
 }
 
 void Camera::RecomputeView()
 {
-    m_View = glm::translate(glm::mat4(1.f), -m_Position) * m_Rotation.ToRotationMatrix();
+    //m_View = glm::translate(glm::mat4(1.f), -flippedPos) * m_Rotation.ToRotationMatrix();
+    
+    glm::vec3 direction = m_Rotation.ToDirection();
+
+    // Target position to look at
+    glm::vec3 lookat = m_Position + glm::normalize(direction);
+    m_View = glm::lookAt(m_Position, lookat, glm::vec3(0.f, 1.f, 0.f));
+    
     RecomputeViewProjection();
 }
 

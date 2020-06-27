@@ -12,6 +12,8 @@ namespace Vct
     static Resource::Type ResType_Model("model");
 
     class Texture2D;
+    class Material;
+    class MaterialInstance;
 
     /* A Model is an aggregate of meshes decomposed by materials. This exist to 
     *  describe meshes with multiple materials using a material id system.
@@ -20,11 +22,17 @@ namespace Vct
     {
     public:
         static Model* Import(const char* filepath);
+        static Model* FromMesh(Mesh* mesh, MaterialInstance* material);
+        static Model* FromMeshes(const std::vector<Mesh*>& meshes, const std::vector<MaterialInstance*>& materials);
+        static Model* FromMeshes(std::vector<std::unique_ptr<Mesh>>& meshes, std::vector<MaterialInstance*>& materials); // Move constructor
 
         Model(const std::string& resFile);
         Model(const Path& resPath);
 
         void SetMaterial(uint8_t materialId, Material* material) {}
+
+        Mesh* GetMesh(uint8_t meshId) const;
+        MaterialInstance* GetMaterial(uint8_t materialId) const;
 
         RES_TYPE(ResType_Model);
     protected:
@@ -33,22 +41,8 @@ namespace Vct
         virtual void Unload() override;
         virtual void UpdateDependencies() override;
     private:
-        /* TODO: Must be resources */
-        std::vector<Mesh> m_Meshes;
-        std::vector<TResourcePtr<Material>> m_Materials;
-    };
-
-
-    class ModelMgr : public ResourceMgr
-    {
-    public:
-
-    protected:
-        virtual Resource* CreateResource(const Path& resPath)
-        {
-            return new Model(resPath);
-        }
-    private:
-
+        // Model claims ownership of meshes
+        std::vector<std::unique_ptr<Mesh>> m_Meshes;
+        std::vector<MaterialInstance*> m_Materials;
     };
 }

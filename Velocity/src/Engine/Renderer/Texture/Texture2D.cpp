@@ -150,13 +150,13 @@ Texture2D::~Texture2D()
 
 void Texture2D::Bind(uint32_t textureSlot)
 {
-    glActiveTexture(textureSlot);
+    glActiveTexture(GL_TEXTURE0 + textureSlot);
     glBindTexture(GL_TEXTURE_2D, RendererId);
 }
 
 void Texture2D::Unbind(uint32_t textureSlot)
 {
-    glActiveTexture(textureSlot);
+    glActiveTexture(GL_TEXTURE0 + textureSlot);
     glBindTexture(GL_TEXTURE_2D, 0);
 }
 

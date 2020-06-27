@@ -6,6 +6,9 @@
 
 namespace Vct
 {
+    class Mesh;
+    class MaterialInstance;
+
     class Renderer
     {
     public:
@@ -16,6 +19,7 @@ namespace Vct
         void Shutdown();
 
         void BeginScene(const Camera& camera);
+        void Submit(Mesh* mesh, const glm::mat4& transform, MaterialInstance* matInstance);
         void EndScene();
         
         void RenderCubemap();
@@ -38,6 +42,8 @@ namespace Vct
         // Executed on worker thread. Currently unused because we want all async calls to be deferred commands that are flushed before
         // the scene begins rendering. It is exclusively used for resource loading so far.
         void ProcessCmds();
+
+        void Draw();
     private:
         RenderCmdQueue m_TextureCmdQueue;
         RenderCmdQueue m_BufferCmdQueue;
@@ -46,5 +52,29 @@ namespace Vct
 
         std::thread m_WorkerThread;
         bool m_Finished;
+
+        struct RenderItem
+        {
+            Mesh* MeshItem;
+            glm::mat4 Transform;
+            MaterialInstance* MatInstance;
+
+            RenderItem(Mesh* mesh, const glm::mat4& transform, MaterialInstance* matInstance)
+                : MeshItem(mesh)
+                , Transform(transform)
+                , MatInstance(matInstance)
+            {
+            }
+        };
+
+        struct RenderData
+        {
+            glm::mat4 View;
+            glm::mat4 Projection;
+            
+            std::vector<RenderItem> RenderItems;
+        };
+
+        RenderData m_RenderData;
     };
 }

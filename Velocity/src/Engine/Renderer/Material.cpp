@@ -28,6 +28,7 @@ Material::Material(const Path& resPath)
 
 void Material::Bind()
 {
+    m_Shader->Bind();
     for(int i = 0; i < m_Textures.size(); ++i)
     {
         if(Texture* texture = m_Textures[i])
@@ -46,6 +47,8 @@ void Material::Unbind()
             texture->Unbind(i);
         }
     }
+
+    m_Shader->Unbind();
 }
 
 void Material::SetFlags(uint8_t flags)
@@ -57,6 +60,13 @@ void Material::SetFlag(Flags flag, bool on)
 {
     on  ? m_Flags |= flag 
         : m_Flags &= ~(flag);
+}
+
+void Material::SetSceneUniforms(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
+{
+    SetUniform(model, "Model");
+    SetUniform(view, "View");
+    SetUniform(projection, "Projection");
 }
 
 void Material::SetTexture(int slot, Texture* texture)
@@ -108,6 +118,13 @@ void MaterialInstance::SetFlag(Material::Flags flag, bool on)
 {
     on  ? m_Flags |= flag
         : m_Flags &= ~(flag);
+}
+
+void MaterialInstance::SetSceneUniforms(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection)
+{
+    SetUniform(model, "Model");
+    SetUniform(view, "View");
+    SetUniform(projection, "Projection");
 }
 
 void MaterialInstance::SetTexture(int slot, Texture* texture)

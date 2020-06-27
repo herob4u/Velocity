@@ -5,8 +5,6 @@
 
 namespace Vct
 {
-    class Material;
-
     class Mesh
     {
     public:
@@ -17,9 +15,12 @@ namespace Vct
                                     glm::vec3& outTangent, glm::vec3& outBiTangent);
 
         Mesh(uint32_t numVertices, uint16_t numTriangles);
+        ~Mesh();
 
         FORCEINLINE uint32_t GetNumVertices() const  { return NumVertices; }
         FORCEINLINE uint16_t GetNumTriangles() const { return NumTriangles; }
+
+        void Draw();
     protected:
         void InitBuffers(const void* vertexData, size_t size, const std::vector<Triangle>& indices);
         void SetBufferLayout(const BufferLayout& layout);
@@ -46,5 +47,11 @@ namespace Vct
     {
     public:
         SkyboxMesh(const std::vector<SkyboxVertex>& vertices, const std::vector<Triangle>& indices);
+    };
+
+    class ColorMesh : public Mesh
+    {
+    public:
+        ColorMesh(const std::vector<ColoredVertex>& vertices, const std::vector<Triangle>& indices);
     };
 }

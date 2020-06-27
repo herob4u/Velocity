@@ -4,6 +4,8 @@
 #include "ShaderProgram.h"
 #include "Material.h"
 
+#include "Materials/LambertMaterial.h"
+
 #include "Texture/Texture2D.h"
 #include "Texture/Cubemap.h"
 #include "Mesh/Model.h"
@@ -84,12 +86,28 @@ void Renderer::Shutdown()
 
 void Renderer::BeginScene(const Camera& camera)
 {
+    m_RenderData.View       = camera.GetView();
+    m_RenderData.Projection = camera.GetProjection();
+    m_RenderData.RenderItems.clear();
+
     m_TextureCmdQueue.Flush();
     m_BufferCmdQueue.Flush();
 }
 
+void Renderer::Submit(Mesh* mesh, const glm::mat4& transform, MaterialInstance* matInstance)
+{
+    if(!mesh)
+    {
+        VCT_WARN("Invalid mesh submitted for render");
+        return;
+    }
+
+    m_RenderData.RenderItems.emplace_back(mesh, transform, matInstance);
+}
+
 void Renderer::EndScene()
 {
+    Draw();
 }
 
 void Renderer::RenderCubemap()
@@ -222,10 +240,6 @@ void Renderer::Unbind(Framebuffer&)
 
 Renderer& Renderer::Get()
 {
-/*
-    static Renderer self;
-    return self;
-*/
     return gEngine->GetRenderer();
 }
 
@@ -245,5 +259,33 @@ void Renderer::ProcessCmds()
     {
         m_TextureCmdQueue.TryProcessNext();
         m_BufferCmdQueue.TryProcessNext();
+    }
+}
+
+void Renderer::Draw()
+{
+    if(m_RenderData.RenderItems.size() == 0)
+        return;
+
+    std::vector<RenderItem>& renderItems = m_RenderData.RenderItems;
+
+    for(RenderItem& item : renderItems)
+    {
+        if(!(item.MeshItem && item.MatInstance))
+        {
+            VCT_WARN("Could not render item: no mesh or material assigned");
+            continue;
+        }
+
+        item.MatInstance->Bind();
+        item.MatInstance->SetSceneUniforms(item.Transform, m_RenderData.View, m_RenderData.Projection);
+
+        if(auto lambertMat = dynamic_cast<LambertMaterialInstance*>(item.MatInstance))
+        {
+            lambertMat->SetColor(glm::vec4(1.f, 0.f, 0.f, 1.f));
+            lambertMat->SetLightColor(glm::vec3(1.f));
+            lambertMat->SetLightPos(glm::vec3(0.f, 1.f, 0.f));
+        }
+        item.MeshItem->Draw();
     }
 }

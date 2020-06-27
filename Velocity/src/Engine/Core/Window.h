@@ -25,7 +25,7 @@ namespace Vct
         inline unsigned short GetWidth() const { return m_WindowData.Width; }
         inline unsigned short GetHeight() const { return m_WindowData.Height; }
         inline bool IsVSyncEnabled() const { return m_WindowData.bVSync; }
-
+        inline void* GetNativeWindow() const { return m_Window; }
     private:
         void Init();
         void Shutdown();

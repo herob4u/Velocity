@@ -36,7 +36,7 @@ FORCEINLINE glm::vec3 Rotator::ToDirection() const
     const float roll    = glm::radians(Roll);
 
     direction.x = cos(yaw) * cos(pitch);
-    direction.y = sin(pitch);
+    direction.y = -sin(pitch);
     direction.z = sin(yaw) * cos(pitch);
 
     return direction;

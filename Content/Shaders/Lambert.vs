@@ -1,28 +1,31 @@
 #version 330
 
-in (layout=0) vec3 a_Position;
-in (layout=1) vec3 a_Normal;
-in (layout=2) vec2 a_UV;
+// MeshVertex
+in layout(location=0) vec3 a_Position;
+in layout(location=1) vec3 a_Normal;
+in layout(location=2) vec2 a_UV;
+in layout(location=3) vec3 a_Tangent;
+in layout(location=4) vec3 a_BiTangent;
 
-struct LightSource
-{
-	vec3 Pos;
-	vec3 Intensity;
-};
-uniform LightSource Light;
-
-uniform mat4 ViewProjection;
+uniform mat4 View;
+uniform mat4 Projection;
 uniform mat4 Model;
 
-out vec3 normal_ES;
-out vec3 pos_ES;
+out VS_out
+{
+	vec3 normal_ES;
+	vec3 pos_ES;
+} vs_out;
 
 void main()
 {
 	vec4 position = vec4(a_Position, 1.f);
 
-	pos_ES = (ModelView * position).xyz;
-	normal_ES = normalize(mat3(ModelView) * a_Normal); // Must be changed to NormalMatrix
+	// Excuse the misnomer
+	mat4 ModelView = View * Model;
 
-	gl_Position = ViewProjection * Model * vec4(a_Position, 1.f);
+	vs_out.pos_ES = (ModelView * position).xyz;
+	vs_out.normal_ES = normalize(mat3(ModelView) * a_Normal);
+
+	gl_Position = Projection * View * Model * position;
 }

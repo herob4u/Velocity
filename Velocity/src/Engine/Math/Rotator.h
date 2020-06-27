@@ -24,6 +24,11 @@ struct Rotator
     void operator+=(const Rotator& Other);
     void operator-=(const Rotator& Other);
 
+    friend std::ostream& operator<<(std::ostream& os, const Rotator& rotator)
+    {
+        os << "{Pitch: " << rotator.Pitch << ", Yaw: " << rotator.Yaw << ", Roll: " << rotator.Roll << "}";
+        return os;
+    }
 };
 
 #include "Rotator.inl"

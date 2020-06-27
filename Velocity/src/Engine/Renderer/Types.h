@@ -227,11 +227,9 @@ namespace Vct
     * ===============================================================*/
     struct Triangle
     {
-        unsigned short Idx[3];
-        unsigned short MaterialId;
+        uint32_t Idx[3];
 
-        Triangle(unsigned short v1, unsigned short v2, unsigned short v3, unsigned short matId = 0)
-            : MaterialId(matId)
+        Triangle(unsigned short v1, unsigned short v2, unsigned short v3)
         {
             Idx[0] = v1;
             Idx[1] = v2;
@@ -244,7 +242,6 @@ namespace Vct
             Idx[1] = Other.Idx[1];
             Idx[2] = Other.Idx[2];
 
-            MaterialId = Other.MaterialId;
         }
     };
 

@@ -2,6 +2,7 @@
 #include "Shader.h"
 
 #include "Engine/Engine.h"
+#include "GLError.h"
 
 #include "glad/glad.h"
 #include "glm/gtc/type_ptr.hpp"
@@ -255,10 +256,12 @@ Shader::Shader(const StringId& shaderName)
         }
         else
         {
+            GL_CHECK_ERROR();
             shaderCache.CacheProgram(*this);
         }
     }
 
+    GL_CHECK_ERROR();
     ScanUniforms();
 }
 
@@ -304,12 +307,20 @@ void Shader::SetAttributes(Attributes attr)
 
 void Shader::Bind() const
 {
+    GL_CHECK_ERROR();
+
     glUseProgram(m_RendererId);
+
+    GL_CHECK_ERROR();
 }
 
 void Shader::Unbind() const
 {
+    GL_CHECK_ERROR();
+
     glUseProgram(0);
+
+    GL_CHECK_ERROR();
 }
 
 bool Shader::GetBinary(void** outData, size_t& bytes, int& format) const
@@ -396,6 +407,8 @@ int Shader::FindUniformLocation(const StringId & uniformName) const
 
 void Shader::SetUniform1f(const StringId& uniform, float x)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -408,6 +421,8 @@ void Shader::SetUniform1f(const StringId& uniform, float x)
 
 void Shader::SetUniformVec2f(const StringId& uniform, const glm::vec2& vec)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -420,6 +435,8 @@ void Shader::SetUniformVec2f(const StringId& uniform, const glm::vec2& vec)
 
 void Shader::SetUniformVec3f(const StringId& uniform, const glm::vec3& vec)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -432,6 +449,8 @@ void Shader::SetUniformVec3f(const StringId& uniform, const glm::vec3& vec)
 
 void Shader::SetUniformVec4f(const StringId& uniform, const glm::vec4& vec)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -444,6 +463,8 @@ void Shader::SetUniformVec4f(const StringId& uniform, const glm::vec4& vec)
 
 void Shader::SetUniform1i(const StringId& uniform, int x)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -456,6 +477,8 @@ void Shader::SetUniform1i(const StringId& uniform, int x)
 
 void Shader::SetUniformVec2i(const StringId& uniform, const glm::ivec2& vec)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -468,6 +491,8 @@ void Shader::SetUniformVec2i(const StringId& uniform, const glm::ivec2& vec)
 
 void Shader::SetUniformVec3i(const StringId& uniform, const glm::ivec3& vec)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -480,6 +505,8 @@ void Shader::SetUniformVec3i(const StringId& uniform, const glm::ivec3& vec)
 
 void Shader::SetUniformVec4i(const StringId& uniform, const glm::ivec4& vec)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -492,6 +519,8 @@ void Shader::SetUniformVec4i(const StringId& uniform, const glm::ivec4& vec)
 
 void Shader::SetUniformMat2(const StringId& uniform, const glm::mat2& mat, bool transpose)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -504,6 +533,8 @@ void Shader::SetUniformMat2(const StringId& uniform, const glm::mat2& mat, bool 
 
 void Shader::SetUniformMat3(const StringId& uniform, const glm::mat3& mat, bool transpose)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -516,6 +547,8 @@ void Shader::SetUniformMat3(const StringId& uniform, const glm::mat3& mat, bool 
 
 void Shader::SetUniformMat4(const StringId& uniform, const glm::mat4& mat, bool transpose)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -528,6 +561,8 @@ void Shader::SetUniformMat4(const StringId& uniform, const glm::mat4& mat, bool 
 
 void Shader::SetUniformArray1i(const StringId& uniform, int* values, uint32_t count)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)
@@ -540,6 +575,8 @@ void Shader::SetUniformArray1i(const StringId& uniform, int* values, uint32_t co
 
 void Shader::SetUniformArray1f(const StringId& uniform, float* values, uint32_t count)
 {
+    GL_CHECK_ERROR();
+
     int location = FindUniformLocation(uniform);
 
     if(location == -1)

@@ -32,6 +32,9 @@ namespace Vct
         void SetFlags(uint8_t flags);
         void SetFlag(Flags flag, bool on);
 
+        // For debugging purposes, this should not exist in the future, replace with global uniform buffer objects
+        virtual void SetSceneUniforms(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
+
         FORCEINLINE uint32_t GetId() const      { return m_Id; }
         FORCEINLINE Shader* GetShader() const   { return m_Shader; }
         FORCEINLINE int GetFlags() const        { return m_Flags; }
@@ -80,6 +83,9 @@ namespace Vct
 
         void SetFlags(uint8_t flags);
         void SetFlag(Material::Flags flag, bool on);
+
+        // For debugging purposes, this should not exist in the future, replace with global uniform buffer objects
+        virtual void SetSceneUniforms(const glm::mat4& model, const glm::mat4& view, const glm::mat4& projection);
 
         FORCEINLINE Material* GetMaterial() const { return m_Material; }
         FORCEINLINE uint32_t  GetId() const { return m_Id; }
