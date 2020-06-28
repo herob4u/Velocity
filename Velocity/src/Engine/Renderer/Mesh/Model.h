@@ -29,17 +29,22 @@ namespace Vct
         Model(const std::string& resFile);
         Model(const Path& resPath);
 
-        void SetMaterial(uint8_t materialId, Material* material) {}
+        void SetMaterial(uint8_t materialId, MaterialInstance* material);
 
+        const auto& GetMeshes() const { return m_Meshes; }
         Mesh* GetMesh(uint8_t meshId) const;
         MaterialInstance* GetMaterial(uint8_t materialId) const;
 
+        FORCEINLINE int GetNumMeshes() const { return m_Meshes.size(); }
         RES_TYPE(ResType_Model);
     protected:
         /* Resource Interface */
         virtual bool Load(const void* rawBinary, size_t bytes) override;
         virtual void Unload() override;
         virtual void UpdateDependencies() override;
+
+        bool LoadFBX(const void* rawBinary, size_t bytes);
+        bool LoadOBJ(const void* rawBinary, size_t bytes);
     private:
         // Model claims ownership of meshes
         std::vector<std::unique_ptr<Mesh>> m_Meshes;

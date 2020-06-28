@@ -8,6 +8,8 @@ namespace Vct
     class Mesh
     {
     public:
+        typedef std::vector<float> AttribArray;
+
         static void ComputeTangents(const glm::vec3& p1, const glm::vec3& p2, const glm::vec3& p3,
                                     const glm::vec2& uv1,
                                     const glm::vec2& uv2,
@@ -15,7 +17,7 @@ namespace Vct
                                     glm::vec3& outTangent, glm::vec3& outBiTangent);
 
         Mesh(uint32_t numVertices, uint16_t numTriangles);
-        ~Mesh();
+        virtual ~Mesh();
 
         FORCEINLINE uint32_t GetNumVertices() const  { return NumVertices; }
         FORCEINLINE uint16_t GetNumTriangles() const { return NumTriangles; }

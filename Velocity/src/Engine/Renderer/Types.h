@@ -229,7 +229,7 @@ namespace Vct
     {
         uint32_t Idx[3];
 
-        Triangle(unsigned short v1, unsigned short v2, unsigned short v3)
+        Triangle(uint32_t v1, uint32_t v2, uint32_t v3)
         {
             Idx[0] = v1;
             Idx[1] = v2;
@@ -242,6 +242,10 @@ namespace Vct
             Idx[1] = Other.Idx[1];
             Idx[2] = Other.Idx[2];
 
+        }
+
+        Triangle()
+        {
         }
     };
 

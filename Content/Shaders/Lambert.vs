@@ -13,19 +13,17 @@ uniform mat4 Model;
 
 out VS_out
 {
-	vec3 normal_ES;
-	vec3 pos_ES;
+	vec3 fragNormal;
+	vec3 fragPos;
 } vs_out;
 
 void main()
 {
-	vec4 position = vec4(a_Position, 1.f);
+	mat3 normalMatrix	= mat3(transpose(inverse(Model)));
+	vec4 position		= vec4(a_Position, 1.f);
 
-	// Excuse the misnomer
-	mat4 ModelView = View * Model;
-
-	vs_out.pos_ES = (ModelView * position).xyz;
-	vs_out.normal_ES = normalize(mat3(ModelView) * a_Normal);
+	vs_out.fragPos		= (View * Model * position).xyz;
+	vs_out.fragNormal	= normalMatrix * normalize(a_Normal);
 
 	gl_Position = Projection * View * Model * position;
 }

@@ -72,6 +72,14 @@ ViewportLayer::ViewportLayer()
 
 void ViewportLayer::OnAttached()
 {
+    m_SphereModel = TResourcePtr<Model>("bunny.obj");
+    m_SphereModel.Load();
+    m_SphereModel.Get()->SetMaterial(0, m_CubeMaterial.get());
+
+    m_FreyaModel = Path("linda.obj");
+    m_FreyaModel.Load();
+    m_FreyaModel.Get()->SetMaterial(0, m_CubeMaterial.get());
+
 #ifdef SCREENSHOT_TEST
     Renderer& renderer = Renderer::Get();
 
@@ -102,7 +110,16 @@ void ViewportLayer::OnUpdate(float dt)
 
     renderer.BeginScene(m_Camera);
         //RenderCommands::DrawImage(m_TexturedQuadShader, m_BackgroundTexture.Get());
-        renderer.Submit(m_CubeModel->GetMesh(0), glm::translate(glm::mat4(1.f), glm::vec3(0, 0, -5)), m_CubeModel->GetMaterial(0));
+        //renderer.Submit(m_CubeModel->GetMesh(0), glm::translate(glm::mat4(1.f), glm::vec3(0, 0, -5)), m_CubeModel->GetMaterial(0));
+        static glm::mat4 model = glm::translate(glm::scale(glm::mat4(1.f), glm::vec3(0.1f)), glm::vec3(0, 0, -5));
+        //renderer.Submit(m_SphereModel.Get()->GetMesh(0), model, m_SphereModel.Get()->GetMaterial(0));
+        //renderer.Submit(m_FreyaModel.Get()->GetMesh(0), model, m_SphereModel.Get()->GetMaterial(0));
+        //renderer.Submit(m_CubeModel.get()->GetMesh(0), glm::mat4(1), m_CubeMaterial.get());
+
+        Model* freya = m_FreyaModel.Get();
+        renderer.Submit(freya->GetMesh(0), model, m_CubeMaterial.get());
+        renderer.Submit(freya->GetMesh(1), model, m_CubeMaterial.get());
+
     renderer.EndScene();
 
     m_CameraController.Update(dt);

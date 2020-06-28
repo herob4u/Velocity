@@ -79,9 +79,11 @@ void Mesh::Draw()
     GL_CHECK_ERROR();
 
     glDrawElements(GL_TRIANGLES, GetNumTriangles() * 3, GL_UNSIGNED_INT, nullptr);
+    //glDrawArrays(GL_TRIANGLES, 0, GetNumVertices());
     GL_CHECK_ERROR();
 
     glBindVertexArray(0);
+    glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, 0);
 }
 
 void Mesh::InitBuffers(const void* vertexData, size_t size, const std::vector<Triangle>& triangles)
@@ -117,7 +119,6 @@ void Mesh::SetBufferLayout(const BufferLayout& layout)
 
     glBindVertexArray(m_vao);
     glBindBuffer(GL_ARRAY_BUFFER, m_vbo);
-
     GL_CHECK_ERROR();
 
     uint32_t stride = layout.GetStride();
@@ -131,6 +132,7 @@ void Mesh::SetBufferLayout(const BufferLayout& layout)
     GL_CHECK_ERROR();
 
     glBindBuffer(GL_ARRAY_BUFFER, 0);
+
     glBindVertexArray(0);
 }
 

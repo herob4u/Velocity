@@ -30,6 +30,8 @@ namespace Vct
         std::shared_ptr<Shader> m_PBRShader;
 
         std::unique_ptr<Model> m_CubeModel;
+        TResourcePtr<Model> m_SphereModel;
+        TResourcePtr<Model> m_FreyaModel;
         std::unique_ptr<LambertMaterial> m_LambertMaterial;
         std::unique_ptr<LambertMaterialInstance> m_CubeMaterial;
         class Framebuffer* m_ScreenshotBuffer;

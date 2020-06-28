@@ -33,7 +33,7 @@ namespace Vct
         };
 
         Camera(const Frustum& frustum = Frustum());
-        Camera(float fov, float aspect, float nearz = 0.1f, float farz = WORLD_Z_MAX);
+        Camera(float fov, float aspect, float nearz = 0.001f, float farz = WORLD_Z_MAX);
 
         void SetFOV(float fov);
         void SetAspect(float aspect);

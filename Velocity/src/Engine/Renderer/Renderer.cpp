@@ -107,6 +107,10 @@ void Renderer::Submit(Mesh* mesh, const glm::mat4& transform, MaterialInstance* 
 
 void Renderer::EndScene()
 {
+    glEnable(GL_DEPTH_TEST);
+    // Accept fragment if it closer to the camera than the former one
+    glDepthFunc(GL_LESS);
+
     Draw();
 }
 
@@ -282,7 +286,9 @@ void Renderer::Draw()
 
         if(auto lambertMat = dynamic_cast<LambertMaterialInstance*>(item.MatInstance))
         {
-            lambertMat->SetColor(glm::vec4(1.f, 0.f, 0.f, 1.f));
+            static const glm::vec4 RED_COLOR(1.f, 0.f, 0.f, 1.f);
+            static const glm::vec4 GREY_COLOR(0.5f, 0.5f, 0.5f, 1.f);
+            lambertMat->SetColor(GREY_COLOR);
             lambertMat->SetLightColor(glm::vec3(1.f));
             lambertMat->SetLightPos(glm::vec3(0.f, 1.f, 0.f));
         }

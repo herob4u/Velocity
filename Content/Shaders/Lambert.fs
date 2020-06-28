@@ -1,7 +1,5 @@
 #version 330
 
-uniform vec3 Color;
-
 struct LightSource
 {
 	vec3 position;
@@ -11,8 +9,8 @@ uniform LightSource light;
 
 in VS_out
 {
-	vec3 normal_ES;
-	vec3 pos_ES;
+	vec3 fragNormal;
+	vec3 fragPos;
 } fs_in;
 
 struct Material
@@ -23,18 +21,19 @@ struct Material
 
 uniform Material material;
 
-float Lambertian(vec3 pos, vec3 normal, vec3 lightPos)
-{
-	vec3 lightVec = normalize(lightPos - pos);
-	return max(0, dot(normal, lightVec));
-}
-
 void main()
 {
 	vec3 ambient = normalize(vec3(69, 111, 124));
 
-	float lambert = Lambertian(fs_in.pos_ES, fs_in.normal_ES, light.position);
-	vec3 illumination = lambert * (light.intensity + ambient);
+	vec3 norm		= normalize(fs_in.fragNormal);
+	vec3 pos		= fs_in.fragPos;
+	vec3 lightDir	= normalize(light.position - pos);
 
-	gl_FragColor = vec4(illumination * material.color.xyz, 1.f);
+	float lambert		= max(dot(norm, lightDir), 0.0);
+	vec3 illumination	= (lambert * light.intensity) + ambient;
+
+	if(light.position.y > 2)
+		gl_FragColor = vec4(norm, 1.f);
+	else
+		gl_FragColor = vec4(illumination * material.color.xyz, 1.f);
 }
