@@ -2,5 +2,8 @@
 
 namespace Vct
 {
-    
+    class World
+    {
+
+    };
 }

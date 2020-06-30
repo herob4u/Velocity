@@ -1,11 +1,5 @@
 #version 400
 
-in vec3 eye_Position;
-in vec3 eye_Normal;
-in vec2 TexCoord;
-in mat3 TBN;
-in mat3 InvNormalMatrix;
-
 out vec4 fragColor;
 
 #define MAX_SCENE_LIGHTS 16
@@ -46,107 +40,152 @@ uniform Maps maps;
 
 uniform Material
 {
-	vec4 diffuse;
+	vec3 diffuse;
 	vec4 mask1; // x = metallicness, y = roughness, w = rim light
 	vec3 emissive;
 } material;
 
+out DATA
+{
+	vec4 position;
+	vec3 normal;
+	vec2 uv;
+	vec3 tangent;
+	vec3 bitangent;
+	mat3 TBN; // Tangent, BiTangent, Normal matrix to transform tangent space normals to world space
+	mat3 InvNormalMatrix; 
+} fs_in;
+
 const float PI = 3.141592653589793;
 const float lambertian = (1.0 / PI);
+const float GAMMA = 2.2;
 
 float saturate(in float val)
 {
 	return clamp(val, 0.f, 1.f);
 }
 
-// Schlick's Fresnel factor approximation where f0 is the reflectance at angle of incidence and cos_theta is the cosine of the incident angle
-// For non-metals, f0 = 0.04
-vec3 fresnel_factor(in vec3 f0, in float cos_theta)
+vec3 GammaCorrect(vec3 color)
 {
-	// Schlick’s Approximation. See: https://graphicscompendium.com/raytracing/11-fresnel-beer
-	// This returns the probability of reflection
-    return mix(f0, vec3(1.0), pow(1.01 - cos_theta, 5.0));
+	return pow(color, vec3(1.0 / GAMMA));
+}
+// ------------------------------------ DIFFUSE MODELS ----------------------------------------- //
+
+// Returns the diffuse factor based on Disney's method. Uses a fresnel factor to create
+// a retroreflective finish as opposed to the dark shadows from Lambert Diffuse.
+float Disney_Diffuse(float NdL, float NdV, float NdH, float roughness)
+{
+	// A bias factor for a fresnel effect that will boost output response for rougher surfaces
+	// at grazing angles while attenuating smoother surfaces (ranges from 0.5 to 2.5). This is 
+	// what gives rough materials their brighter, flatter color.
+	float fd90 = 0.5 + 2 * (NdH * NdH) * roughness;
+	float f0 = 1;
+
+	// What is this energy factor? Not found in the Disney formulation
+	float energyFactor = mix(1.0, 1.0 / 1.51, roughness);
+
+	float light_fresnel = fresnel_schlick(f0, fd90, NdL);
+	float view_fresnel  = fresnel_schlick(f0, fd90, NdV);
+
+	return light_fresnel * view_fresnel;
 }
 
-// UE4 implementation for computing cook-torrance specular lighting terms
-// These are the distribution functions D. Given a direction, the value of D indicates
-// the percentage of microfacets facing that direction.
-// The RMS microfacet slope, m, is assumed to be roughness^2 by Disney. This was carried on
-// by the UE4 implementation.
-
-float D_blinn(in float roughness, in float NdH)
+float Lambert_Diffuse(float NdL)
 {
-    float m = roughness * roughness;
-    float m2 = m * m;
-    float n = 2.0 / m2 - 2.0;
-    return (n + 2.0) / (2.0 * PI) * pow(NdH, n);
+	return (NdL * lambertian);
 }
 
-float D_beckmann(in float roughness, in float NdH)
+float OrenNayer_Diffuse()
 {
-    float m = roughness * roughness;
-    float m2 = m * m;
-    float NdH2 = NdH * NdH;
-    return exp((NdH2 - 1.0) / (m2 * NdH2)) / (PI * m2 * NdH2 * NdH2);
+	return 0;
 }
 
-float D_GGX(in float roughness, in float NdH)
+// ------------------------------------ SPECULAR MODELS ----------------------------------------- //
+
+// Sample from Distribution function for Cook-Torrance Specular.
+// Note for GGX. Because of the alpha term in the numerator, if roughness is exactly 0, the specular highlight
+// collapses and completely disappears (f(x) = 0), make sure you clamp it to small value.
+float GGX(float NdH, float roughness)
 {
-    float m = roughness * roughness;
-    float m2 = m * m;
-    float d = (NdH * m2 - NdH) * NdH + 1.0;
-    return m2 / (PI * d * d);
+	// Sample the GGX distribution for the D term that describes the specular lobe.
+	float a = max(roughness * roughness, 0.005);
+	float aa = a * a;
+
+	float den = ((NdH * NdH) * (aa - 1) + 1);
+	float D   = (aa) / (PI * den * den);
+	
+	return D;
 }
 
-float G_schlick(in float roughness, in float NdV, in float NdL)
+// Fresnel Factor for Cook-Torrance Specular. float specular = f(diffuse, metallicness);
+float Fresnel_UE4(float LdH, float specular)
 {
-	// the UE4 implementation remaps roughness for analytic light sources as follows
-	// roughness = (roughness + 1)/2, which leads to k = (roughness + 1)^2 / 8
-    float k = roughness * roughness * 0.5;
-    float V = NdV * (1.0 - k) + k;
-    float L = NdL * (1.0 - k) + k;
-    return 0.25 / (V * L);
+	// The Unreal Engine fresnel factor approximation 
+	LdH = saturate(LdH);
+	float f0 = specular;
+	float pwr = (-5.55473 * LdH - 6.98316) * LdH;
+	return f0 + (1 - f0) * exp2(pwr);
+}
+
+// Geometric Factor for Cook-Torrance Specular
+float G_Smith(float NdV, float NdL, float roughness)
+{
+	// Base on remaped roughness from 0.5 - 1 for better linear scaling shadowing effect
+	float a = pow((0.5 + roughness/2), 2);
+
+	float G_light = NdL / (NdL * (1 - a) + a);
+	float G_view  = NdV / (NdV * (1 - a) + a);
+
+	// Why the 0.25? Not found in Disney/UE4 paper
+	return 0.25 / (G_light * G_view);
+}
+
+float Cook_Torrance_Specular(NdL, NdV, NdH, LdH, roughness)
+{
+	float NdL;
+	float NdV;
+	float NdH;
+	float LdH;
+
+	float roughness;
+	float specular; // from metallicness
+	// D * G * F / cosine term
+	float D = GGX(NdH, roughness);
+	float F = Fresnel_UE4(LdH, specular);
+	float G = G_Smith(NdV, NdL, roughness);
+
+	return (D * F * G) / (4 * NdL * NdV);
+}
+
+float Phong_Specular()
+{
+
 }
 
 
-// Supported Specular Models
-// Cook-Torrance Specular Model
-vec3 CT_specular(in float NdL, in float NdV, in float NdH, in vec3 fresnel_factor, in float roughness)
+// -------------------- Material Params --------------------------/
+vec3 GetDiffuse()
 {
-	return vec3(0.0);
-}
-
-vec3 Sunlight(vec3 V, vec3 N, vec3 sunDir, vec3 sunIntensity)
-{
-	vec3 L = -sunDir;
-	vec3 H = normalize(L+V);
-
-	return vec3(0.0);
-}
-
-void main()
-{
-	vec3 V = normalize(-eye_Position);
-	vec3 N = normalize(eye_Normal);
-
-	//vec3 output = Sunlight(V, N, sceneData.Sunlight.Direction, sceneData.Sunlight.Intensity);
-
-	// TBN transform
-
-	// -------------- Material Parameters -----------------
-	// Diffuse Map
 #ifdef HAS_DIFFUSE_MAP
 	vec3 diffuse = texture(maps.diffuse, TexCoord).xyz;
 #else
-	vec3 diffuse = material.diffuse.rgb;
+	vec3 diffuse = material.diffuse;
 #endif
+	return diffuse;
+}
 
+vec3 GetNormal()
+{
+	vec3 N = normalize(fs_in.normal);
 	// Normal map
 #ifdef HAS_NORMAL_MAP
-	N = TBN * (2.0 * texture(maps.normal, TexCoord).xyz - 1.0);
+	vec3 N = TBN * (2.0 * texture(maps.normal, fs_in.uv).xyz - 1.0);
 #endif
+	return N;
+}
 
-	// Metallicness & Roughness
+vec3 GetMask1()
+{
 #ifdef HAS_MASK1_MAP
 	vec4 mask = texture(maps.mask1);
 
@@ -156,6 +195,66 @@ void main()
 	float metallicness	= material.mask1.r;
 	float roughness		= material.mask1.g;
 #endif
+	return vec3(metallicness, roughness, 0.0);
+}
+
+// ---------------- Redirecting Functions to Specific Models --------------//
+void Diffuse(float NdL, float NdV, float NdH, float LdH, Material material)
+{
+	float roughness = material.mask1.y;
+	return Disney_Diffuse(NdL, NdV, NdH, roughness);
+}
+
+void Specular(float NdL, float NdV, float NdH, float LdH, Material material)
+{
+	float roughness = material.mask1.y;
+	return Cook_Torrance_Specular(NdL, NdV, NdH, LdH, roughness);
+}
+
+vec3 IBLIrradiance(float NdV, float roughness, vec3 specular)
+{
+	vec2 preintegratedFG = texture(maps.irradiance, vec2(roughness, 1.0 - NdV)).rg;
+	return specular * preintegratedFG.r + preintegratedFG.g;
+}
+
+vec3 IBL(vec3 eye, Material material)
+{
+	float normal = normalize(fs_in.normal);
+	float NdV = max(dot(normal, eye), 0.0);
+	float roughness = material.mask1.y;
+	float specular  = mix(vec3(0.04), material.diffuse, material.mask.x);
+
+	vec3 reflectionVector = normalize(reflect(-eye, normal));
+	float smoothness = 1.0 - roughness;
+	float mipLevel = (1.0 - (smoothness * smoothness)) * 10.0;
+
+	// Ambient term - essentially a precomputed FG
+	vec4 cs = textureLod(maps.environment, reflectionVector, mipLevel);
+	vec3 result = pow(cs.xyz, vec3(GAMMA)) * IBLIrradiance(NdV, roughness, specular);
+
+	// The actual environment map sample
+	vec3 diffuseDominantDirection = normal;
+	float diffuseLowMip = 9.6;
+	vec3 diffuseImageLighting = textureLod(maps.environment, diffuseDominantDirection, diffuseLowMip).rgb;
+	diffuseImageLighting = pow(diffuseImageLighting, vec3(GAMMA));
+
+	return result + diffuseImageLighting * material.albedo.rgb;
+}
+
+
+void main()
+{
+	vec3 V = normalize(-fs_in.position.xyz);
+	vec3 N = normalize(GetNormal());
+
+	// TBN transform
+
+	// -------------- Material Parameters -----------------
+	Material mat;
+	mat.diffuse	= GetDiffuse();
+	mat.mask1	= GetMask1();
+	float metallic	= mat.mask1.x;
+	float roughness = mat.mask1.y;
 	
 	// Metallic materials have specular highlights of similar color to the surface because they readily absorb incident light
 	// @TODO: Can we do what SMITE does for metallicness? Directly sampled colors from a texture.
@@ -167,40 +266,37 @@ void main()
 	vec3 refl			= InvNormalMatrix * reflect(-V, N); // The reflection the eye sees from the environment
 	vec3 env_spec		= textureLod(maps.environment, refl, max(roughness * 11.0, textureQueryLod(maps.environment, refl).y)).rgb;
 
+	// -------------- Diffuse and Specular Factors --------------
+	vec3 total_diffuse(0.0);
+	vec3 total_specular(0.0);
+
 	// -------------- Specular Model Computation -----------------
 	// The following are essential quantities that captures the interaction of light with the surface
 	// @TODO: Now only handling sunlight, this later changes into a for-loop that adds contributions from all scene lights
-	vec3 L = -sceneData.Sunlight.Direction; // We want a vector that points TOWARDS the light, hence the opposite of the light direction
-	vec3 H = normalize(L + V);
+	for(int i = 0; i < MAX_SCENE_LIGHTS; i++)
+	{
+		vec3 L = normalize(sceneData.Lights[i].Position - V);
+		vec3 H = normalize(L + V);
 
-	float NdL = max(0.0, dot(N, L));
-	float NdV = max(0.001, dot(N, V));
-	float NdH = max(0.001, dot(N, H));
-	float HdV = max(0.001, dot(H, V));
-	float LdV = max(0.001, dot(L, V));
+		float NdL = saturate(max(0.0, dot(N, L)));
+		float NdV = max(0.001, dot(N, V));
+		float NdH = max(0.001, dot(N, H));
+		float LdH = max(0.001, dot(L, H)); // LdH == VdH
 
-	// Cook Torrance Method for specularity
-	vec3 spec_fresnel = fresnel_factor(specular, HdV); // HdV == NdH, see page 3 of: https://inst.eecs.berkeley.edu/~cs283/sp13/lectures/cookpaper.pdf
-	vec3 spec_reflectance = CT_specular(NdL, NdV, NdH, spec_fresnel, roughness);
+		// Remember, diffuse = kd * fd. specular = ks * fs.
+		total_diffuse += Diffuse(NdL, NdV, NdH, LdH, mat) * sceneData.Lights[i].Intensity;
+		total_specular += Specular(NdL, NdV, NdH, LdH, mat) * sceneData.Lights[i].Intensity;
+	}
 
-	spec_reflectance *= vec3(NdL); // Visible specularity is weighed by the amount of light hitting the surface
+	// Shadow code here...
+	float visibility = 1.0;
+	float bias = 0.005;
+	for(int i = 0; i < MAX_SCENE_LIGHTS; i++)
+	{
+		// Randomly sample shadow map using poisson disc
+	}
 
-	// Lambertian Diffuse - experiment with this by removing fresnel expression
-	vec3 diffuse_reflectance = (vec3(1.0) - spec_fresnel) * NdL * lambertian;
-
-	vec3 reflected_light	= vec3(0.f);
-	vec3 diffuse_light		= vec3(0.f);
-
-
-	// Notice for IBL, engine code must ensure to place at least a BLACK 1x1 texture for null entries
-	vec2 ibl_diffuse = texture(maps.irradiance, vec2(roughness, 1 - NdV)).xy;
-	vec3 ibl_spec = min(vec3(0.99), fresnel_factor(specular, NdV) * ibl_diffuse.x + ibl_diffuse.y);
-
-	reflected_light += ibl_spec * env_spec;
-	diffuse_light   += env_diffuse * (1.0 / PI);
-
-	// Final fragment color
-	// Linear combination of diffuse and specular models
-	vec3 color = diffuse_light * mix(diffuse, vec3(0.0), metallicness) + reflected_light;
-	fragColor = vec4(color, 1.0);
+	vec3 finalColor = mat.diffuse * total_diffuse * visibility + (total_specular) * visibility;
+	finalColor = GammaCorrect(finalColor);
+	fragColor = vec4(finalColor, 1.0);
 }

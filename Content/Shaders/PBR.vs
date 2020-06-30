@@ -8,12 +8,6 @@ in layout(location=2) vec2 a_TexCoord;
 in layout(location=3) vec3 a_Tangent;
 in layout(location=4) vec3 a_BiTangent;
 
-out vec3 eye_Position;
-out vec3 eye_Normal;
-out vec2 TexCoord;
-out mat3 TBN; // Tangent, BiTangent, Normal matrix to transform tangent space normals to world space
-out mat3 InvNormalMatrix;
-
 struct PointLight
 {
 	vec3 Position;
@@ -30,7 +24,7 @@ layout (std140) uniform SceneData
 {
 	mat4 View;
 	mat4 Projection;
-	mat4 NormalMatrix;
+	mat3 NormalMatrix;
 
 	DirectionalLight Sunlight;
 	PointLight Lights[MAX_SCENE_LIGHTS];
@@ -38,27 +32,35 @@ layout (std140) uniform SceneData
 
 uniform mat4 Model;
 
+out DATA
+{
+	vec4 position;
+	vec3 normal;
+	vec2 uv;
+	vec3 tangent;
+	vec3 bitangent;
+	mat3 TBN; // Tangent, BiTangent, Normal matrix to transform tangent space normals to world space
+	mat3 InvNormalMatrix; 
+} vs_out;
+
 void main()
 {
 	// Eye space quantities for fragment shader
-	vec4 position_xyzw = vec4(a_Position, 1.f);
-	vec4 normal_xyzw   = vec4(a_Normal, 1.f);
-	mat3 normalMatrix3 = mat3(sceneData.NormalMatrix);
+	vec4 position = vec4(a_Position, 1.f);
 
-	eye_Position	= (sceneData.View * Model * position_xyzw).xyz;
-	//eye_Normal		= normalize(sceneData.NormalMatrix * normal_xyzw).xyz;
-	eye_Normal		= normalize(normalMatrix3 * a_Normal);
+	vs_out.position	= (Model * position);
+	vs_out.normal	= normalize(sceneData.NormalMatrix * a_Normal);
 
 	// TBN Matrix for normal map sampling
-	vec3 T = normalize(normalMatrix3 * a_Tangent);
-	vec3 B = normalize(normalMatrix3 * a_BiTangent);
-	TBN = mat3(T, B, eye_Normal);
+	vec3 T = normalize(sceneData.NormalMatrix * a_Tangent);
+	vec3 B = normalize(sceneData.NormalMatrix * a_BiTangent);
+	vs_out.TBN = mat3(T, B, vs_out.normal);
 
 	// Texture coordinates
-	TexCoord = a_TexCoord;
+	vs_out.uv = a_TexCoord;
 
 	// Invert normal matrix here, less computations than doing it in fragment shader!
-	InvNormalMatrix = mat3(transpose(sceneData.NormalMatrix));
+	sceneData.InvNormalMatrix = transpose(sceneData.NormalMatrix);
 
-	gl_Position = sceneData.Projection * sceneData.View * Model * vec4(a_Position, 1.0f);
+	gl_Position = sceneData.Projection * sceneData.View * Model * position;
 }
