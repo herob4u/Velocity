@@ -1,6 +1,8 @@
 [submodule "Velocity/vendor/spdlog"]
 path = Velocity/vendor/spdlog
 url = https://github.com/gabime/spdlog.git/
+ignore = dirty
 [submodule "Velocity/vendor/OpenFBX"]
 	path = Velocity/vendor/OpenFBX
 	url = https://github.com/nem0/OpenFBX.git
+	ignore = dirty
