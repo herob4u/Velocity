@@ -22,7 +22,7 @@ workspace "Velocity"
 	include "Velocity/vendor/GLFW" -- includes the premake file as a whole
 	include "Velocity/vendor/Glad"
 	include "Velocity/vendor/imgui"
-	include "Velocity/vendor/OpenFBX"
+	--include "Velocity/vendor/OpenFBX"
 
 	libDirectories = {
 		"../lib"
@@ -31,7 +31,7 @@ workspace "Velocity"
 	-- Basic compiler build options
 	buildOptions = {"-std=c++11"}
 
-	if os.get() == "macosx" then
+	if os.target() == "macosx" then
 		linkLibs = {
 			"cs488-framework",
 			"imgui",
@@ -41,7 +41,7 @@ workspace "Velocity"
 		}
 	end
 
-	if os.get() == "linux" then
+	if os.target() == "linux" then
 		linkLibs = {
 			"cs488-framework",
 			"imgui",
@@ -65,7 +65,7 @@ workspace "Velocity"
 		linkOptionList = {"-fopenmp"}
 	end
 
-	if os.get() == "windows" then
+	if os.target() == "windows" then
 		linkLibs = {
 			"GLFW",
 			"Glad",
@@ -77,7 +77,7 @@ workspace "Velocity"
 	end
 
 	-- Build Options:
-	if os.get() == "macosx" then
+	if os.target() == "macosx" then
 		linkOptionList = { "-framework IOKit", "-framework Cocoa", "-framework CoreVideo", "-framework OpenGL" }
 	end
 
@@ -122,11 +122,11 @@ workspace "Velocity"
 
 		configuration "Debug"
 			defines { "DEBUG", "VCT_DEBUG" }
-			flags { "Symbols" }
+			flags { symbols "On" }
 
 		configuration "Release"
 			defines { "NDEBUG", "VCT_RELEASE" }
-			flags { "Optimize" }
+			flags { optimize "On" }
 
 	----------------------------------------------------
 	--				PLATFORM SPECIFICS

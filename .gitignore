@@ -7,6 +7,9 @@ Velocity/Velocity.vcxproj
 Velocity/Velocity.vcxproj.filters
 Velocity/Velocity.vcxproj.user
 
+# Commenting this out because we added OpenFBX as submodule. We can get rid of these ignores
+# all together once we moved all vendor projects to submodules.
 #Velocity/vendor/
-
+Velocity/vendor/Glad/
+Velocity/vendor/ImGui/
 .vs/
