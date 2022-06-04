@@ -6,3 +6,6 @@ ignore = dirty
 	path = Velocity/vendor/OpenFBX
 	url = https://github.com/nem0/OpenFBX.git
 	ignore = dirty
+[submodule "Velocity/vendor/tinyobjloader"]
+	path = Velocity/vendor/tinyobjloader
+	url = https://github.com/tinyobjloader/tinyobjloader.git
