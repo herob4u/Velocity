@@ -14,7 +14,6 @@ Velocity/Velocity.vcxproj.user
 # Commenting this out because we added OpenFBX as submodule. We can get rid of these ignores
 # all together once we moved all vendor projects to submodules.
 #Velocity/vendor/
-Velocity/vendor/OpenFBX/
 Velocity/vendor/spdlog/
 Velocity/vendor/Glad/
 Velocity/vendor/ImGui/
