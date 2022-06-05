@@ -13,7 +13,7 @@ workspace "Velocity"
 		"Velocity/vendor/glm",
 		"Velocity/vendor/spdlog/include",
 		"Velocity/vendor/dirent/include",
-		"Velocity/vendor/tinyOBJ",
+		"Velocity/vendor/tinyobjloader",
 		"Velocity/vendor/OpenFBX/src",
 
 		"Velocity/src"
@@ -22,7 +22,8 @@ workspace "Velocity"
 	include "Velocity/vendor/GLFW" -- includes the premake file as a whole
 	include "Velocity/vendor/Glad"
 	include "Velocity/vendor/imgui"
-	--include "Velocity/vendor/OpenFBX"
+	include "Velocity/vendor/tinyobjloader"
+	include "Velocity/vendor/OpenFBX"
 
 	libDirectories = {
 		"../lib"
@@ -71,6 +72,7 @@ workspace "Velocity"
 			"Glad",
 			"imGui",
 			"OpenFBX",
+			"tinyobjloader",
 			"opengl32.lib"
 		}
 		table.insert(buildOptions, "/openmp")
@@ -85,8 +87,8 @@ workspace "Velocity"
 		location "Velocity"
 		kind "ConsoleApp"
 		language "C++"
-		objdir "build"
-		targetdir "."
+		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
+		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 		buildoptions (buildOptions)
 		--libdirs (libDirectories)
 		links (linkLibs)
@@ -115,9 +117,7 @@ workspace "Velocity"
 			"%{prj.name}/src/**.cpp",
 			"%{prj.name}/src/**.inl",
 			"%{prj.name}/vendor/glm/glm/**.hpp",
-			"%{prj.name}/vendor/glm/glm/**.inl",
-			"%{prj.name}/vendor/tinyOBJ/**.cpp",
-			--"%{prj.name}/vendor/tinyOBJ/**.h"
+			"%{prj.name}/vendor/glm/glm/**.inl"
 		}
 
 		configuration "Debug"

@@ -1,4 +1,5 @@
 build/
+Cache/
 Velocity.exe
 Velocity.pdb
 Velocity.ilk
@@ -6,6 +7,9 @@ Velocity.sln
 Velocity/Velocity.vcxproj
 Velocity/Velocity.vcxproj.filters
 Velocity/Velocity.vcxproj.user
+
+*bin
+*bin-int
 
 # Commenting this out because we added OpenFBX as submodule. We can get rid of these ignores
 # all together once we moved all vendor projects to submodules.

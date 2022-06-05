@@ -5,7 +5,7 @@
 #include "Engine/Utils/StringUtils.h"
 
 // Model importing
-#include "tinyOBJ.h"
+#include "tiny_obj_loader.h"
 #include "ofbx.h"
 
 using namespace Vct;

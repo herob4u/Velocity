@@ -8,7 +8,8 @@
     #elif VCT_PLATFORM_LINUX
         #define ASSERT(x, ...)  if((!x)){VCT_ERROR("Assertion Failed: {0}", __VA_ARGS__); raise(SIGABRT);}
     #endif
-
+#else
+    #define ASSERT(x, ...)
 #endif // VCT_DEBUG
 
 // Compilter specifics
