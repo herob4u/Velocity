@@ -2,7 +2,12 @@
 #include "Path.h"
 
 static const std::string INVALID_FILE_TOKENS = "\"' ,/.:|&!~\n\r\t@#(){}[]=;^%$`";
+static const std::string INVALID_EXT_TOKENS = INVALID_FILE_TOKENS;
 static const std::string INVALID_DIRECTORY_TOKENS = "\"' ,|&!~\n\r\t@#(){}[]=;^%$`";
+
+static bool INVALID_FILE_TOKEN_TABLE[255] = {false};
+static bool INVALID_EXT_TOKEN_TABLE[255] = {false};
+static bool INVALID_DIRECTORY_TOKEN_TABLE[255] = {false};
 
 PathError Path::GetExtension(const std::string& path, std::string& outExtension, bool bWithDelimeter)
 {
@@ -84,136 +89,254 @@ PathError Path::GetBaseNameExtension(const std::string& path, std::string& outBa
     return PathError::NONE;
 }
 
-Path::Path()
-    : m_PathId(StringId::NONE)
+bool Path::IsFile(const char* path)
 {
+    if(!path)
+        return false;
+
+
+    int i = 0;
+    int lastSlash = -1;
+    while(i < MAX_PATH_LENGTH && path[i] != '\n')
+    {
+        if(path[i] == '/') { lastSlash = i; }
+
+        else if(path[i] == '.')
+        {
+            // Found extension. First verify no weird format like "/.ext"
+            // Must be in form of "/a.ext" at least
+            if(lastSlash != -1 && (i - lastSlash) <= 1)
+            {
+                return false;
+            }
+
+            ++i;
+
+            // Ensure the end of the extension is found without special characters
+            while(i < MAX_PATH_LENGTH && path[i] != '\n')
+            {
+                if(INVALID_EXT_TOKEN_TABLE[path[i++]])
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        ++i;
+    }
+
+    return false;
+}
+
+bool Path::IsDirectory(const char* dir)
+{
+    if(!dir) { return false; }
+
+    int i = 0;
+    while(i < MAX_PATH_LENGTH && dir[i] != '\n')
+    {
+        if(INVALID_DIRECTORY_TOKEN_TABLE[dir[i]])
+        {
+            return false;
+        }
+    }
+
+    // Folders need trailing slash
+    return i > 0 && dir[i-1] == '/';
+}
+
+void Path::StaticInit()
+{
+    for(char token : INVALID_FILE_TOKENS)
+    {
+        INVALID_FILE_TOKEN_TABLE[token] = true;
+    }
+
+    for(char token : INVALID_DIRECTORY_TOKENS)
+    {
+        INVALID_DIRECTORY_TOKEN_TABLE[token] = true;
+    }
+
+    for(char token : INVALID_EXT_TOKENS)
+    {
+        INVALID_EXT_TOKEN_TABLE[token] = true;
+    }
+}
+
+Path::Path()
+    : m_pathStr()
+    , m_pathLength(0)
+{
+    memset(m_pathStr, 0, MAX_PATH_LENGTH);
 }
 
 Path::Path(const char* path)
 {
     ASSERT(path, "Null path string");
     Sanitize(path);
-    m_PathId = StringId(path);
+
+    InitPath(path, nullptr);
 }
 
 Path::Path(const char* folder, const char* file)
 {
     ASSERT((folder && file), "Null path strings");
-    size_t lenFolder = strlen(folder);
-    size_t lenFile = strlen(file);
-
-    char* fullpath = (char*)malloc(sizeof(char) * (lenFolder + lenFile + 1));
-
-    /* @TODO: Replace with strcat */
-    /* @TODO: Is it not better to decompose PathId to FolderId and FileId? Reduces stale entries in StringIdTable */
-    memcpy(fullpath, folder, lenFolder);
-    memcpy(&fullpath[lenFolder], file, lenFile);
-    fullpath[lenFolder+lenFile] = '\0';
-
-    m_PathId = StringId(fullpath);
-
-    free(fullpath);
+    InitPath(file, folder);
 }
 
-Path::Path(const StringId& pathId)
-    : m_PathId(pathId)
+Path::Path(StringId const& pathId)
 {
+    if(pathId != StringId::NONE)
+    {
+        const char* path = pathId.ToStringRef();
+        memcpy(m_pathStr, path, strlen(path));
+    }
+    
 }
 
 bool Path::operator==(const Path& Other) const
 {
-    return m_PathId == Other.m_PathId;
+    return m_pathLength == Other.m_pathLength // trivial reject, speeds up majority of comparisons
+    && strcmp(m_pathStr, Other.m_pathStr) == 0;
 }
 
 Path Path::operator+(const Path& Other) const
 {
-    ASSERT(!IsFile(), "Invalid Path Concatenation");
-    StringId concatId = StringId::Concat(m_PathId, Other.m_PathId);
-    return Path(concatId);
+    Path newPath = *this;
+
+    if(!Other.IsValid())
+    {
+        return newPath;
+    }
+
+    if(IsFile())
+    {
+        ASSERT(false, "Invalid Path Concatenation");
+        return newPath;
+    }
+
+    if(m_pathLength + Other.m_pathLength >= MAX_PATH_LENGTH)
+    {
+        ASSERT(false, "Concatenated path exceeds maximum length");
+        return newPath;
+    }
+
+    for(size_t i = 0, j = m_pathLength; i < Other.m_pathLength; ++i, ++j)
+    {
+        newPath.m_pathStr[j] = Other.m_pathStr[i];
+    }
+
+    return newPath;
 }
 
 Path& Path::operator+=(const Path& Other)
 {
-    ASSERT(!IsFile(), "Invalid Path Concatenation");
-    m_PathId = StringId::Concat(m_PathId, Other.m_PathId);
+    if(!Other.IsValid())
+    {
+        return *this;
+    }
+
+    if(IsFile())
+    {
+        ASSERT(false, "Invalid Path Concatenation");
+        return *this;
+    }
+
+    if(m_pathLength + Other.m_pathLength >= MAX_PATH_LENGTH)
+    {
+        ASSERT(false, "Concatenated path exceeds maximum length");
+        return *this;
+    }
+
+    for(size_t i = 0, j = m_pathLength; i < Other.m_pathLength; ++i, ++j)
+    {
+        m_pathStr[j] = Other.m_pathStr[i];
+    }
+
     return *this;
-    // TODO: insert return statement here
 }
 
 PathError Path::GetExtension(std::string& outExtension, bool bWithDelimeter) const
 {
-    std::string path = m_PathId.ToString();
-    return Path::GetExtension(path, outExtension, bWithDelimeter);
+    return Path::GetExtension(m_pathStr, outExtension, bWithDelimeter);
 }
 
 PathError Path::GetDirectory(std::string& outDirectory) const
 {
-    std::string path = m_PathId.ToString();
-    return Path::GetDirectory(path, outDirectory);
+    return Path::GetDirectory(m_pathStr, outDirectory);
 }
 
 PathError Path::GetBaseName(std::string& outBaseName) const
 {
-    std::string path = m_PathId.ToString();
-    return Path::GetBaseName(path, outBaseName);
+    return Path::GetBaseName(m_pathStr, outBaseName);
 }
 
 PathError Path::GetBaseNameExtension(std::string& outBaseNameExtension) const
 {
-    std::string path = m_PathId.ToString();
-    return Path::GetBaseNameExtension(path, outBaseNameExtension);
+    return Path::GetBaseNameExtension(m_pathStr, outBaseNameExtension);
 }
 
 std::string Path::GetFullPath() const
 {
-    return m_PathId.ToString();
+    return m_pathStr;
 }
 
 const char* Path::GetFullPathRef() const
 {
-    return m_PathId.ToStringRef();
+    return m_pathStr;
 }
 
 bool Path::IsFile() const
 {
-    if(m_PathId == StringId::NONE)
+    if(!IsValid())
         return false;
 
-    std::string path = m_PathId.ToString();
-
-    if(path[path.length() - 1] == '/')
-        return false;
-
-    for(int i = (int)path.length() - 1; i >= 0; i--)
-    {
-        // Valid file if no strange string such as "Folder/.ext" or ".ext"
-        if(path[i] == '.')
-        {
-            return (i > 0) && (path[i-1] != '/');
-        }
-    }
-
-    // No delimiters found, points to a base file name.
-    return true;
+    return Path::IsFile(m_pathStr);
 }
 
 bool Path::IsDirectory() const
 {
-    if(m_PathId == StringId::NONE)
+    if(!IsValid())
         return false;
 
-    std::string path = m_PathId.ToString();
-
-    return path[path.length() - 1] == '/';
+    return Path::IsDirectory(m_pathStr);
 }
 
 bool Path::IsValid() const
 {
-    return (m_PathId != StringId::NONE);
+    return m_pathLength != 0;
 }
 
 void Path::Sanitize(const char* path)
 {
+}
+
+void Path::InitPath(const char* path, const char* optionalFolder)
+{
+    // Turn into a function!
+    size_t const lenPath = strlen(path);
+    size_t const lenFolder = optionalFolder ? strlen(optionalFolder) : 0;
+
+    ASSERT((lenPath + lenFolder)< MAX_PATH_LENGTH, "Invalid path length. Must be less than %i", MAX_PATH_LENGTH);
+    m_pathLength = lenPath + lenFolder;
+
+    if(lenFolder > 0)
+    {
+        memcpy(m_pathStr, optionalFolder, lenFolder);
+    }
+
+    memcpy(m_pathStr + lenFolder, path, lenPath);
+
+    if(m_pathStr[MAX_PATH_LENGTH - 1] != '\n' && (m_pathLength) == MAX_PATH_LENGTH)
+    {
+        ASSERT(false, "Maximum path length reached, but path has no terminating character. This can lead to undefined behavior.");
+    }
+    else
+    {
+        m_pathStr[m_pathLength] = '\n';
+    }
 }
 
 std::ostream& operator<<(std::ostream& os, const Path& path)

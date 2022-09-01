@@ -17,4 +17,6 @@ Velocity/Velocity.vcxproj.user
 Velocity/vendor/spdlog/
 Velocity/vendor/Glad/
 Velocity/vendor/ImGui/
+Velocity/vendor/Catch2/
+Velocity/vendor/OpenCL-Wrapper/
 .vs/

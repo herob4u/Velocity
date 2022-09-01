@@ -35,7 +35,7 @@ namespace Vct
         Mesh* GetMesh(uint8_t meshId) const;
         MaterialInstance* GetMaterial(uint8_t materialId) const;
 
-        FORCEINLINE int GetNumMeshes() const { return m_Meshes.size(); }
+        FORCEINLINE int GetNumMeshes() const { return static_cast<int>(m_Meshes.size()); }
         RES_TYPE(ResType_Model);
     protected:
         /* Resource Interface */

@@ -195,7 +195,7 @@ void Image::Release()
 uint8_t Image::PixelAt(int x, int y) const
 {
     const size_t stride = ((m_Depth / sizeof(uint8_t)) * m_Channels);
-    const int idx = ((y -1) * m_Width + x - 1) * stride;
+    const size_t idx = ((y -1) * m_Width + x - 1) * stride;
 
     return m_Data[idx];
 }
@@ -203,7 +203,7 @@ uint8_t Image::PixelAt(int x, int y) const
 float Image::PixelAt_f(int x, int y) const
 {
     const size_t stride = ((m_Depth / sizeof(uint8_t)) * m_Channels);
-    const int idx = ((y - 1) * m_Width + x - 1) * stride;
+    const size_t idx = ((y - 1) * m_Width + x - 1) * stride;
 
     return ((float*)m_Data)[idx];
 }
@@ -211,7 +211,7 @@ float Image::PixelAt_f(int x, int y) const
 Image* Image::Extract(int x, int y, int w, int h) const
 {
     const size_t stride = ((m_Depth/sizeof(uint8_t)) * m_Channels);
-    const int idx = ((y - 1) * m_Width + x - 1) * stride;
+    const size_t idx = ((y - 1) * m_Width + x - 1) * stride;
     
     PixelBuffer start = &m_Data[idx];
 

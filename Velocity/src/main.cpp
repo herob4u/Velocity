@@ -12,6 +12,9 @@
 #include <chrono>
 #include <omp.h>
 
+#define CATCH_CONFIG_MAIN
+#include "catch.hpp"
+
 Vct::Engine* Vct::gEngine = new Vct::VelocityEngine();
 
 static Vct::Resource::Type TextResourceType("text");
