@@ -15,10 +15,12 @@ workspace "Velocity"
 		"Velocity/vendor/dirent/include",
 		"Velocity/vendor/tinyobjloader",
 		"Velocity/vendor/OpenFBX/src",
-
+		"Velocity/vendor/OpenCL-Wrapper/src",
+		"Velocity/vendor/OpenCL-Wrapper/src/OpenCL/include",
+		"Velocity/vendor/Catch2/single_include/catch2",
 		"Velocity/src"
 	}
-
+	
 	include "Velocity/vendor/GLFW" -- includes the premake file as a whole
 	include "Velocity/vendor/Glad"
 	include "Velocity/vendor/imgui"
@@ -26,7 +28,8 @@ workspace "Velocity"
 	include "Velocity/vendor/OpenFBX"
 
 	libDirectories = {
-		"../lib"
+		"../lib",
+		"Velocity/vendor/OpenCL-Wrapper/src/OpenCL/lib/"
 	}
 
 	-- Basic compiler build options
@@ -90,7 +93,7 @@ workspace "Velocity"
 		objdir ("bin-int/" .. outputdir .. "/%{prj.name}")
 		targetdir ("bin/" .. outputdir .. "/%{prj.name}")
 		buildoptions (buildOptions)
-		--libdirs (libDirectories)
+		libdirs (libDirectories)
 		links (linkLibs)
 		linkoptions (linkOptionList)
 		includedirs (includeDirList)
